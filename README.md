@@ -37,6 +37,23 @@ registrieren, in den Einstellungen Kategorien anlegen – und optional
 > sonst lehnt SvelteKit Formular-Submits ab. Der Proxy muss `X-Forwarded-Proto` und
 > `X-Forwarded-Host` setzen (bei Traefik/NPM/Caddy Standard).
 
+### Deployment mit Coolify
+
+Für Coolify liegt eine eigene Compose-Datei ohne Host-Port-Binding bei
+(`docker-compose.coolify.yml`) – Coolifys Proxy übernimmt Domain und TLS:
+
+1. **Projekt → + New → Resource** → Repository auswählen (per GitHub-App oder als
+   Public Repository), Branch `main`.
+2. **Build Pack:** „Docker Compose", **Docker Compose Location:** `/docker-compose.coolify.yml`.
+3. Beim Service **app** als Domain `https://news.deine-domain.de:3000` eintragen –
+   das `:3000` sagt Coolify, auf welchen Container-Port geroutet wird. DNS-A-Record
+   der Domain muss auf den Server zeigen; das TLS-Zertifikat holt Coolify automatisch.
+4. **Environment Variables** setzen: `POSTGRES_PASSWORD` (sicheres Passwort),
+   `ORIGIN=https://news.deine-domain.de`, optional `ALLOW_REGISTRATION`.
+5. **Deploy** klicken. Migrationen laufen beim Start automatisch; `pgdata`- und
+   `images`-Volumes bleiben über Redeploys erhalten.
+6. Nach der eigenen Registrierung `ALLOW_REGISTRATION=false` setzen und neu deployen.
+
 ## KI per MCP verbinden
 
 In **Einstellungen → KI & MCP** einen Token erstellen. Der MCP-Endpoint ist
