@@ -309,6 +309,10 @@
 							Token „{form.newTokenLabel}" – jetzt kopieren, er wird nur einmal angezeigt:
 						</p>
 						<code class="mt-1 block text-sm break-all text-amber-200 select-all">{form.newToken}</code>
+						<p class="mt-3 text-xs font-medium text-amber-300">
+							Connector-URL für Claude Desktop (Custom Connector, ohne Authentifizierung):
+						</p>
+						<code class="mt-1 block text-sm break-all text-amber-200 select-all">{data.mcpUrl}/{form.newToken}</code>
 					</div>
 				{/if}
 				<ul class="mt-2 space-y-2">
@@ -342,7 +346,14 @@
 
 				<h3 class="mt-6 text-sm font-semibold">Claude Desktop einrichten</h3>
 				<p class="mt-1 text-sm text-slate-400">
-					Entweder als Custom Connector (Settings → Connectors → URL + Token) oder per
+					<strong class="text-slate-300">Empfohlen (ohne Node.js):</strong> Custom Connector mit
+					geheimer URL – Settings → Connectors → „Add custom connector", als URL
+					<code class="text-xs">{data.mcpUrl}/&lt;DEIN_TOKEN&gt;</code> eintragen (wird beim
+					Erstellen eines Tokens oben fertig angezeigt), keine Authentifizierung nötig.
+					Die URL enthält das Geheimnis – nicht weitergeben.
+				</p>
+				<p class="mt-3 text-sm text-slate-400">
+					<strong class="text-slate-300">Alternative (Node.js erforderlich):</strong> per
 					<code class="text-xs">mcp-remote</code> in der <code class="text-xs">claude_desktop_config.json</code>:
 				</p>
 				<pre class="mt-2 overflow-x-auto rounded-xl bg-slate-950 p-3 text-xs leading-relaxed text-slate-300">{claudeConfig}</pre>
