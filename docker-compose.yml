@@ -1,0 +1,40 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      # bind to localhost only; the reverse proxy terminates TLS for the domain
+      - '127.0.0.1:3000:3000'
+    environment:
+      DATABASE_URL: postgres://newsapp:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/newsapp
+      # public URL of the app, required for correct form submissions behind a proxy
+      ORIGIN: ${ORIGIN:?set ORIGIN in .env, e.g. https://news.example.com}
+      PROTOCOL_HEADER: x-forwarded-proto
+      HOST_HEADER: x-forwarded-host
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}
+      IMAGE_DIR: /app/data/images
+      BODY_SIZE_LIMIT: 5M
+    volumes:
+      - images:/app/data/images
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: newsapp
+      POSTGRES_USER: newsapp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U newsapp -d newsapp']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
+  images:
