@@ -12,7 +12,7 @@ export const init: ServerInit = async () => {
 export const handle: Handle = async ({ event, resolve }) => {
 	// MCP + token-based REST routes authenticate via Bearer token, not cookies.
 	const path = event.url.pathname;
-	if (path === '/mcp' || path.startsWith('/api/v1/')) {
+	if (path === '/mcp' || path.startsWith('/mcp/') || path.startsWith('/api/v1/')) {
 		event.locals.user = null;
 		event.locals.sessionId = null;
 		return resolve(event);

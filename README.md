@@ -61,9 +61,11 @@ In **Einstellungen → KI & MCP** einen Token erstellen. Der MCP-Endpoint ist
 
 **Claude Desktop** – zwei Möglichkeiten:
 
-1. *Custom Connector*: Settings → Connectors → „Add custom connector" → URL `https://deine-domain/mcp`,
-   Header `Authorization: Bearer <token>`.
-2. *`claude_desktop_config.json`* (auch für Clients ohne Remote-Support):
+1. *Custom Connector mit geheimer URL (empfohlen, kein Node.js nötig)*: Settings → Connectors →
+   „Add custom connector" → URL `https://deine-domain/mcp/<DEIN_TOKEN>`, keine Authentifizierung.
+   Die fertige Connector-URL wird beim Erstellen eines Tokens in den Einstellungen angezeigt.
+   Achtung: Die URL enthält das Geheimnis – nicht weitergeben.
+2. *`claude_desktop_config.json`* mit `mcp-remote` (erfordert Node.js auf dem Rechner):
 
 ```json
 {
