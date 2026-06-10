@@ -270,7 +270,7 @@
 					Artikel werden nach dieser Anzahl Tage automatisch gelöscht. Gemerkte Artikel (★) sind
 					ausgenommen. Unabhängig davon werden alle Artikel, die älter als 12 Monate sind, entfernt.
 				</p>
-				<form method="POST" action="?/setRetention" use:enhance class="mt-4 flex items-end gap-3">
+				<form method="POST" action="?/setRetention" use:enhance={() => async ({ update }) => update({ reset: false })} class="mt-4 flex items-end gap-3">
 					<div>
 						<span class={labelClass}>Tage</span>
 						<input name="days" type="number" min="1" max="365" required value={data.deleteAfterDays} class="input w-28" />
@@ -284,7 +284,7 @@
 
 			<div class="card p-5">
 				<h2 class="font-semibold">Profil</h2>
-				<form method="POST" action="?/updateProfile" use:enhance class="mt-3 flex items-end gap-3">
+				<form method="POST" action="?/updateProfile" use:enhance={() => async ({ update }) => update({ reset: false })} class="mt-3 flex items-end gap-3">
 					<div class="flex-1">
 						<span class={labelClass}>Spitzname</span>
 						<input name="nickname" required maxlength="60" value={data.nickname} class="input" />
@@ -368,7 +368,7 @@
 					(<code class="text-xs">https://api.anthropic.com/v1</code>), OpenAI, Ollama
 					(<code class="text-xs">http://host:11434/v1</code>), LM Studio u. a.
 				</p>
-				<form method="POST" action="?/saveAi" use:enhance class="mt-4 space-y-3">
+				<form method="POST" action="?/saveAi" use:enhance={() => async ({ update }) => update({ reset: false })} class="mt-4 space-y-3">
 					<div>
 						<span class={labelClass}>Base-URL</span>
 						<input name="baseUrl" type="url" placeholder="https://api.anthropic.com/v1" value={data.ai.baseUrl} class="input" />

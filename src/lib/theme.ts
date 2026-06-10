@@ -89,5 +89,7 @@ function tokenBlock(t: ThemeTokens): string {
 }
 
 export function buildThemeCss(light: ThemeTokens, dark: ThemeTokens): string {
-	return `:root { ${tokenBlock(light)} }\n.dark { ${tokenBlock(dark)} }`;
+	// doubled :root selectors out-rank the defaults in app.css regardless of
+	// the order in which the browser receives the two stylesheets
+	return `:root:root { ${tokenBlock(light)} }\n:root:root.dark { ${tokenBlock(dark)} }`;
 }

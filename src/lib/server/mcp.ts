@@ -59,7 +59,8 @@ const TOOLS = [
 				},
 				image_url: {
 					type: 'string',
-					description: 'Optional URL of a fitting image; it is downloaded and cached locally.'
+					description:
+						'Optional direct URL to an image FILE (e.g. the og:image of a source article), not the page URL. It is downloaded and cached locally; the result reports whether caching worked.'
 				},
 				published_at: {
 					type: 'string',
@@ -133,7 +134,7 @@ async function callTool(scope: TokenScope, name: string, args: Record<string, un
 		}
 		case 'save_article': {
 			try {
-				const article = await saveArticle(scope, {
+				const { article, imageError } = await saveArticle(scope, {
 					categoryId: String(args.category_id ?? ''),
 					topicId: args.topic_id ? String(args.topic_id) : null,
 					headline: String(args.headline ?? ''),
@@ -148,7 +149,8 @@ async function callTool(scope: TokenScope, name: string, args: Record<string, un
 				return toolText({
 					saved: true,
 					article_id: article.id,
-					image_cached: article.imagePath !== null
+					image_cached: article.imagePath !== null,
+					...(imageError ? { image_error: imageError } : {})
 				});
 			} catch (err) {
 				if (err instanceof SaveArticleError) return toolText(err.message, true);

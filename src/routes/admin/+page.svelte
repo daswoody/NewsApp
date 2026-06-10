@@ -81,7 +81,7 @@
 				</summary>
 				<div class="space-y-4 border-t border-token p-3">
 					<!-- group name + AI -->
-					<form method="POST" action="?/saveGroup" use:enhance class="space-y-3">
+					<form method="POST" action="?/saveGroup" use:enhance={() => async ({ update }) => update({ reset: false })} class="space-y-3">
 						<input type="hidden" name="id" value={group.id} />
 						<div class="grid gap-3 sm:grid-cols-2">
 							<div>
@@ -276,7 +276,8 @@
 
 		<div class="mt-4 grid gap-4 sm:grid-cols-2">
 			{#each themeModes as { mode, title, theme } (mode)}
-				<form method="POST" action="?/saveTheme" use:enhance class="subcard space-y-3 p-3">
+				<!-- reset: false keeps the color pickers filled after saving -->
+				<form method="POST" action="?/saveTheme" use:enhance={() => async ({ update }) => update({ reset: false })} class="subcard space-y-3 p-3">
 					<input type="hidden" name="mode" value={mode} />
 					<p class="text-sm font-semibold">{title}</p>
 					<div class="grid grid-cols-2 gap-2">

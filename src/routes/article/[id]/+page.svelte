@@ -13,6 +13,13 @@
 		data.topicTitle ? `${data.categoryTitle} / ${data.topicTitle}` : data.categoryTitle
 	);
 
+	let showTopicForm = $state(false);
+	const topicSuggestion = $derived(
+		data.article.headline.length > 40
+			? `${data.article.headline.slice(0, 37).trimEnd()}…`
+			: data.article.headline
+	);
+
 	type Bubble = { role: string; content: string; error?: boolean };
 	let chat: Bubble[] = $state([]);
 	let question = $state('');
@@ -100,7 +107,8 @@
 				class="hero-fade absolute inset-x-0 bottom-0 h-3/4"
 			></div>
 		</div>
-		<a href="/" aria-label="Zurück zur Übersicht" class="icon-btn absolute top-4 left-4 h-10 w-10 rounded-full">
+		<!-- desktop back button; on mobile the one next to the chat input is used -->
+		<a href="/" aria-label="Zurück zur Übersicht" class="icon-btn absolute top-4 left-4 hidden h-10 w-10 rounded-full sm:flex">
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
 			</svg>
@@ -120,18 +128,46 @@
 			<span class="rounded-md px-2.5 py-1 text-xs font-semibold {chipColor(data.categoryTitle)}">{tag}</span>
 			<span class="flex-1"></span>
 			<StarButton articleId={data.article.id} saved={data.article.saved} action="?/toggleSave" />
-			{#if !data.article.hasTopic}
-				<form method="POST" action="?/makeTopic" use:enhance>
-					<button
-						type="submit"
-						title="Erzeugt ein Hot Topic zu diesem Thema, damit künftig mehr News dazu erscheinen"
-						class="btn-ghost rounded-full px-3 py-1.5 text-xs font-medium"
-					>
-						+ Als Sub-Topic festlegen
-					</button>
-				</form>
+			{#if !data.article.hasTopic && !showTopicForm}
+				<button
+					type="button"
+					onclick={() => (showTopicForm = true)}
+					title="Erzeugt ein Hot Topic zu diesem Thema, damit künftig mehr News dazu erscheinen"
+					class="btn-ghost rounded-full px-3 py-1.5 text-xs font-medium"
+				>
+					+ Als Sub-Topic festlegen
+				</button>
 			{/if}
 		</div>
+		{#if form?.error}
+			<p class="mt-2 rounded-lg bg-red-100 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">
+				{form.error}
+			</p>
+		{/if}
+		{#if showTopicForm && !data.article.hasTopic}
+			<form
+				method="POST"
+				action="?/makeTopic"
+				use:enhance={() => async ({ update }) => {
+					showTopicForm = false;
+					await update();
+				}}
+				class="subcard mt-3 space-y-2 p-3"
+			>
+				<p class="text-muted text-xs">
+					Neues Hot Topic in „{data.categoryTitle}" – Titel und Beschreibung anpassen, damit künftige
+					Recherchen mehr News dazu liefern:
+				</p>
+				<input name="title" required maxlength="40" value={topicSuggestion} class="input" />
+				<textarea name="description" rows="2" class="input">{data.article.summary}</textarea>
+				<div class="flex gap-2">
+					<button type="submit" class="btn-primary px-4 py-1.5 text-xs">Sub-Topic anlegen</button>
+					<button type="button" onclick={() => (showTopicForm = false)} class="btn-ghost px-4 py-1.5 text-xs">
+						Abbrechen
+					</button>
+				</div>
+			</form>
+		{/if}
 		{#if form && 'topicCreated' in form && form.topicCreated}
 			<p class="mt-2 accent-soft rounded-lg px-3 py-2 text-sm">
 				Sub-Topic „{form.topicCreated}" angelegt – künftige Recherchen liefern mehr News dazu.
@@ -210,7 +246,8 @@
 	class="fixed inset-x-0 bottom-0 bottom-fade pt-8 pb-[max(1rem,env(safe-area-inset-bottom))]"
 >
 	<form onsubmit={ask} class="mx-auto flex max-w-3xl items-center gap-2 px-4">
-		<a href="/" aria-label="Zurück zur Übersicht" class="icon-btn h-11 w-11 shrink-0 rounded-full">
+		<!-- mobile back button; on desktop the one on the hero image is used -->
+		<a href="/" aria-label="Zurück zur Übersicht" class="icon-btn flex h-11 w-11 shrink-0 rounded-full sm:hidden">
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
 			</svg>
