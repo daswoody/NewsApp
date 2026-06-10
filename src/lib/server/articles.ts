@@ -1,7 +1,8 @@
-import { and, desc, eq, gte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { articles, categories, sources, topics, users } from '$lib/server/db/schema';
 import { cacheImage } from '$lib/server/images';
+import type { TokenScope } from '$lib/server/mcp-auth';
 
 export interface SaveArticleInput {
 	categoryId: string;
@@ -18,12 +19,10 @@ export class SaveArticleError extends Error {}
 
 /**
  * Shared write path used by the MCP tool and the REST endpoint.
- * Validates that category/topic belong to the given user, caches the
- * image locally and stores article + sources. With userId = null
- * (central/family mode) the article is assigned to whoever owns the
- * category, so one admin token can research for every account.
+ * The article is assigned to whoever owns the category; the token scope
+ * limits which categories are writable (own account or group members).
  */
-export async function saveArticle(userId: string | null, input: SaveArticleInput) {
+export async function saveArticle(scope: TokenScope, input: SaveArticleInput) {
 	const headline = input.headline?.trim();
 	const summary = input.summary?.trim();
 	const content = input.content?.trim();
@@ -31,13 +30,23 @@ export async function saveArticle(userId: string | null, input: SaveArticleInput
 		throw new SaveArticleError('headline, summary and content are required');
 	}
 
-	const categoryFilter = userId
-		? and(eq(categories.id, input.categoryId), eq(categories.userId, userId))
-		: eq(categories.id, input.categoryId);
 	const category = (
-		await db.select().from(categories).where(categoryFilter).limit(1)
+		await db.select().from(categories).where(eq(categories.id, input.categoryId)).limit(1)
 	)[0];
 	if (!category) throw new SaveArticleError(`Unknown category_id: ${input.categoryId}`);
+
+	if (scope.kind === 'user') {
+		if (category.userId !== scope.userId) {
+			throw new SaveArticleError(`Unknown category_id: ${input.categoryId}`);
+		}
+	} else {
+		const owner = (
+			await db.select().from(users).where(eq(users.id, category.userId)).limit(1)
+		)[0];
+		if (!owner || owner.groupId !== scope.groupId) {
+			throw new SaveArticleError(`Unknown category_id: ${input.categoryId}`);
+		}
+	}
 
 	let topicId: string | null = null;
 	if (input.topicId) {
@@ -109,32 +118,41 @@ export async function getInterests(userId: string) {
 	}));
 }
 
-/** Interests of every account, for the central/family MCP mode. */
-export async function getInterestsForAllUsers() {
-	const allUsers = await db
+/** Interests of every group member, for group MCP tokens. */
+export async function getInterestsForGroup(groupId: string) {
+	const members = await db
 		.select({ id: users.id, nickname: users.nickname })
 		.from(users)
+		.where(eq(users.groupId, groupId))
 		.orderBy(users.createdAt);
 	const result = [];
-	for (const user of allUsers) {
+	for (const member of members) {
 		result.push({
-			user_id: user.id,
-			nickname: user.nickname,
-			categories: await getInterests(user.id)
+			user_id: member.id,
+			nickname: member.nickname,
+			categories: await getInterests(member.id)
 		});
 	}
 	return result;
 }
 
-/**
- * Recent headlines so the AI can avoid storing duplicates.
- * userId = null returns the articles of every account (central mode).
- */
-export async function getRecentArticles(userId: string | null, days: number) {
+/** Recent headlines so the AI can avoid storing duplicates. */
+export async function getRecentArticles(scope: TokenScope, days: number) {
 	const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-	const filter = userId
-		? and(eq(articles.userId, userId), gte(articles.publishedAt, since))
-		: gte(articles.publishedAt, since);
+	let userFilter;
+	if (scope.kind === 'user') {
+		userFilter = eq(articles.userId, scope.userId);
+	} else {
+		const members = await db
+			.select({ id: users.id })
+			.from(users)
+			.where(eq(users.groupId, scope.groupId));
+		if (members.length === 0) return [];
+		userFilter = inArray(
+			articles.userId,
+			members.map((m) => m.id)
+		);
+	}
 	const rows = await db
 		.select({
 			id: articles.id,
@@ -145,7 +163,7 @@ export async function getRecentArticles(userId: string | null, days: number) {
 			publishedAt: articles.publishedAt
 		})
 		.from(articles)
-		.where(filter)
+		.where(and(userFilter, gte(articles.publishedAt, since)))
 		.orderBy(desc(articles.publishedAt));
 	return rows.map((r) => ({
 		article_id: r.id,

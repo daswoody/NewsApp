@@ -1,5 +1,5 @@
 import { handleMcpPost } from '$lib/server/mcp';
-import { userFromToken } from '$lib/server/mcp-auth';
+import { scopeFromToken } from '$lib/server/mcp-auth';
 import type { RequestHandler } from './$types';
 
 /**
@@ -16,9 +16,9 @@ function unauthorized(): Response {
 }
 
 export const POST: RequestHandler = async ({ request, params }) => {
-	const user = await userFromToken(params.token);
-	if (!user) return unauthorized();
-	return handleMcpPost(user, request);
+	const scope = await scopeFromToken(params.token);
+	if (!scope) return unauthorized();
+	return handleMcpPost(scope, request);
 };
 
 export const GET: RequestHandler = async () =>

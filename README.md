@@ -8,8 +8,8 @@ Unter jedem Artikel kannst du einer angebundenen KI (OpenAI-kompatible API) Rüc
 ## Features
 
 - Registrierung/Login; der erste Account wird automatisch Admin
-- Admin-Panel: Nutzer anlegen/löschen, Registrierung an-/abschalten, KI-Verbindung zentral
-  oder pro Nutzer, MCP-Familienmodus
+- Admin-Panel: Nutzer anlegen/löschen, Registrierung an-/abschalten, Gruppen-Verwaltung,
+  Theme-Editor (Farben, Eckenradius, Headline-Schrift je Light/Dark Mode)
 - Konto-Einstellungen: Spitzname/Passwort ändern, Account löschen, Löschintervall
 - Kategorien + Hot Topics mit Beschreibungstexten als Recherche-Auftrag für die KI,
   per Pfeiltasten sortierbar (bestimmt die Chip-Reihenfolge)
@@ -25,13 +25,20 @@ Unter jedem Artikel kannst du einer angebundenen KI (OpenAI-kompatible API) Rüc
   hartes Limit 12 Monate), Bilder werden lokal gecacht und mitgelöscht
 - MCP-Server (Streamable HTTP) + REST-API mit Bearer-Tokens
 
-### MCP-Familienmodus
+### Gruppen (z. B. Familie)
 
-Im Admin-Panel umschaltbar: Ist er aktiv, recherchieren **Admin-Tokens für alle Accounts** –
-`get_interests` liefert die Interessen jedes Nutzers (pro Nutzer gruppiert) und `save_article`
-ordnet jeden Artikel über die Kategorie-ID automatisch dem richtigen Nutzer zu. Ideal, wenn eine
-Person das Setup für die ganze Familie pflegt. Ausgeschaltet wirkt jeder Token nur für den
-eigenen Account (z. B. wenn Freunde ihre eigene KI anbinden).
+Standardmäßig verwaltet jeder Nutzer KI-Verbindung und MCP-Tokens selbst. Der Admin kann im
+Admin-Panel **Gruppen** anlegen und Nutzer zuweisen – dann übernimmt die Gruppe beides:
+
+- Die **Gruppen-KI** gilt für den Artikel-Chat aller Mitglieder.
+- **Gruppen-Tokens** recherchieren für alle Mitglieder: `get_interests` liefert die Interessen
+  jedes Mitglieds (pro Nutzer gruppiert), `save_article` ordnet Artikel über die Kategorie-ID
+  automatisch dem richtigen Nutzer zu.
+- Bei Gruppen-Mitgliedern verschwinden die KI/MCP-Einstellungen aus dem eigenen Account
+  („wird von Gruppe X verwaltet"); wird ein Nutzer entfernt, verwaltet er wieder selbst.
+
+Bestehende Installationen mit aktiviertem Familienmodus werden automatisch in eine Gruppe
+„Familie" migriert.
 
 ## Installation auf dem Server
 

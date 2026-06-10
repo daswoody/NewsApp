@@ -24,9 +24,9 @@
 	);
 </script>
 
-<article class="card group relative p-3 transition hover:shadow-md dark:hover:border-slate-600">
+<article class="card group relative overflow-hidden transition hover:border-[var(--faint)]">
 	<a href={`/article/${article.id}`} class="block">
-		<div class="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-stone-200 dark:bg-slate-800">
+		<div class="bg-soft relative aspect-[4/3] w-full overflow-hidden">
 			{#if article.imagePath}
 				<img
 					src={`/images/${article.imagePath}`}
@@ -37,13 +37,13 @@
 				/>
 			{:else}
 				<div
-					class="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 via-stone-200 to-teal-100 text-4xl dark:from-slate-800 dark:via-slate-900 dark:to-teal-950"
+					class="bg-soft flex h-full w-full items-center justify-center text-4xl"
 				>
 					📰
 				</div>
 			{/if}
 		</div>
-		<div class="space-y-2 px-1 pt-3 pb-1">
+		<div class="space-y-2 p-4">
 			<span class="inline-block rounded-md px-2.5 py-1 text-xs font-semibold {chipColor(article.categoryTitle)}">
 				{tag}
 			</span>
@@ -52,7 +52,7 @@
 			<p class="text-faint text-xs">{shortDate(article.publishedAt)}</p>
 		</div>
 	</a>
-	<div class="absolute top-5 right-5">
+	<div class="absolute top-2.5 right-2.5">
 		<StarButton articleId={article.id} saved={article.saved} />
 	</div>
 </article>

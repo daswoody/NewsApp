@@ -10,7 +10,7 @@
 <main class="flex min-h-dvh items-center justify-center px-4">
 	<div class="w-full max-w-sm">
 		<div class="mb-8 text-center">
-			<div class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-700/10 text-3xl dark:bg-teal-500/15">📰</div>
+			<div class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl accent-soft text-3xl">📰</div>
 			<h1 class="font-display text-2xl font-bold">Willkommen zurück</h1>
 			<p class="text-muted mt-1 text-sm">Melde dich an, um deine News zu lesen.</p>
 		</div>
@@ -33,7 +33,7 @@
 		{#if data.allowRegistration}
 			<p class="text-muted mt-4 text-center text-sm">
 				Noch kein Account?
-				<a href="/register" class="font-medium text-teal-700 hover:underline dark:text-teal-400">Registrieren</a>
+				<a href="/register" class="font-medium text-accent hover:underline">Registrieren</a>
 			</p>
 		{/if}
 	</div>

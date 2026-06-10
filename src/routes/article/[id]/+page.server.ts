@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		.from(chatMessages)
 		.where(eq(chatMessages.articleId, article.id))
 		.orderBy(asc(chatMessages.createdAt));
-	const ai = await resolveAiSettings(locals.user.id);
+	const ai = await resolveAiSettings(locals.user);
 
 	return {
 		article: {
