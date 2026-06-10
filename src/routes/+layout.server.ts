@@ -19,7 +19,8 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			articleHeadings: settings.fontArticleHeadings,
 			articleHeadingsStyle: settings.fontArticleHeadingsStyle,
 			body: settings.fontBody
-		})
+		}),
+		settings.parallaxStrength / 100
 	);
 
 	return {

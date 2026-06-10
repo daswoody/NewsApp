@@ -19,6 +19,11 @@
 		{ mode: 'light', title: 'Light Mode', theme: data.themeLight },
 		{ mode: 'dark', title: 'Dark Mode', theme: data.themeDark }
 	]);
+
+	let parallaxValue = $state(0.35);
+	$effect(() => {
+		parallaxValue = data.parallaxStrength;
+	});
 </script>
 
 <svelte:head><title>Admin – News</title></svelte:head>
@@ -374,6 +379,21 @@
 					</select>
 				</div>
 			</div>
+			<label class="block">
+				<span class={labelClass}>
+					Parallax-Stärke der Bilder: {parallaxValue.toFixed(2)}
+					{parallaxValue === 0 ? '(aus)' : parallaxValue >= 0.8 ? '(sehr stark)' : ''}
+				</span>
+				<input
+					name="parallax"
+					type="range"
+					min="0"
+					max="1"
+					step="0.05"
+					bind:value={parallaxValue}
+					class="w-full accent-[var(--accent)]"
+				/>
+			</label>
 			<label class="flex items-center gap-2 text-sm">
 				<input name="showCardSummary" type="checkbox" checked={data.showCardSummary} class="h-4 w-4 accent-[var(--accent)]" />
 				Vorschautext auf den News-Karten anzeigen

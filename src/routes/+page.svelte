@@ -13,7 +13,7 @@
 		'shrink-0 rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition';
 	const chipInactive =
 		'border border-token bg-[var(--card)] text-muted hover:text-[var(--text)]';
-	const chipActive = 'bg-[var(--text)] text-[var(--bg)]';
+	const chipActive = 'bg-[var(--accent)] text-[var(--on-accent)]';
 </script>
 
 <svelte:head><title>News</title></svelte:head>

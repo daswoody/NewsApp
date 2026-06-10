@@ -97,7 +97,7 @@ Zum Abschluss gib mir eine kurze Übersicht: pro Kategorie die angelegten Artike
 					closeEditors();
 				}}
 				class="rounded-xl py-2 text-sm font-medium transition {tab === id
-					? 'bg-[var(--text)] text-[var(--bg)]'
+					? 'bg-[var(--accent)] text-[var(--on-accent)]'
 					: 'text-muted hover:text-[var(--text)]'}"
 			>
 				{label}
