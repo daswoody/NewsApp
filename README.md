@@ -111,13 +111,10 @@ In **Einstellungen → KI & MCP** einen Token erstellen. Der MCP-Endpoint ist
 nachliefern oder Quellen ersetzen).
 
 **Recherche starten** (MCP ist „pull" – die KI muss angestoßen werden, z. B. manuell oder als
-wiederkehrende Aufgabe):
-
-> Hole über das News-MCP meine Interessen (get_interests) und prüfe mit list_recent_articles,
-> was bereits vorhanden ist. Recherchiere dann im Web die wichtigsten aktuellen Nachrichten zu
-> jeder Kategorie und jedem Hot Topic, prüfe Fakten über mehrere Quellen hinweg und speichere
-> jeden Artikel mit save_article (Headline, Teaser, ausführlicher Artikel in Markdown, Bild-URL
-> aus einer Quelle, alle Quellen).
+wiederkehrende Aufgabe). Die vollständige Prompt-Vorlage („Tagesausgabe": max. 5 Artikel pro
+Kategorie, ähnliche Meldungen zusammengefasst, Faktencheck über mehrere Quellen, sachlicher
+Stil, Bild-Nachreichung per `update_article`) steht zum Kopieren in
+**Einstellungen → KI & MCP → Recherche-Prompt**.
 
 ## REST-API (gleiche Tokens)
 
