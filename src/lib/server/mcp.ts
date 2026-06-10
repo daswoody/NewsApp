@@ -3,6 +3,7 @@ import {
 	getInterestsForGroup,
 	getRecentArticles,
 	saveArticle,
+	updateArticle,
 	SaveArticleError
 } from '$lib/server/articles';
 import type { TokenScope } from '$lib/server/mcp-auth';
@@ -82,6 +83,45 @@ const TOOLS = [
 			required: ['category_id', 'headline', 'summary', 'content', 'sources'],
 			additionalProperties: false
 		}
+	},
+	{
+		name: 'update_article',
+		description:
+			'Updates an already saved article, e.g. to add or replace the image after an image_error, refresh the text or replace the sources. Only the provided fields change. Use the article_id returned by save_article or list_recent_articles.',
+		inputSchema: {
+			type: 'object',
+			properties: {
+				article_id: { type: 'string', description: 'ID of the article to update.' },
+				headline: { type: 'string', description: 'New headline.' },
+				summary: { type: 'string', description: 'New teaser text.' },
+				content: { type: 'string', description: 'New full article text in Markdown.' },
+				image_url: {
+					type: 'string',
+					description:
+						'Direct URL to an image FILE; it replaces the current image when the download succeeds.'
+				},
+				topic_id: {
+					type: 'string',
+					description:
+						'Hot-topic ID from get_interests; pass an empty string to remove the topic assignment.'
+				},
+				published_at: { type: 'string', description: 'New ISO 8601 date.' },
+				sources: {
+					type: 'array',
+					description: 'Replaces the stored source list completely.',
+					items: {
+						type: 'object',
+						properties: {
+							name: { type: 'string' },
+							url: { type: 'string' }
+						},
+						required: ['name', 'url']
+					}
+				}
+			},
+			required: ['article_id'],
+			additionalProperties: false
+		}
 	}
 ];
 
@@ -148,6 +188,31 @@ async function callTool(scope: TokenScope, name: string, args: Record<string, un
 				});
 				return toolText({
 					saved: true,
+					article_id: article.id,
+					image_cached: article.imagePath !== null,
+					...(imageError ? { image_error: imageError } : {})
+				});
+			} catch (err) {
+				if (err instanceof SaveArticleError) return toolText(err.message, true);
+				throw err;
+			}
+		}
+		case 'update_article': {
+			try {
+				const { article, imageError } = await updateArticle(scope, {
+					articleId: String(args.article_id ?? ''),
+					headline: args.headline ? String(args.headline) : null,
+					summary: args.summary ? String(args.summary) : null,
+					content: args.content ? String(args.content) : null,
+					imageUrl: args.image_url ? String(args.image_url) : null,
+					topicId: args.topic_id !== undefined ? String(args.topic_id) : null,
+					publishedAt: args.published_at ? String(args.published_at) : null,
+					sources: Array.isArray(args.sources)
+						? (args.sources as { name: string; url: string }[])
+						: null
+				});
+				return toolText({
+					updated: true,
 					article_id: article.id,
 					image_cached: article.imagePath !== null,
 					...(imageError ? { image_error: imageError } : {})

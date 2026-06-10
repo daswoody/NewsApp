@@ -5,7 +5,8 @@
 	import { shortDate } from '$lib/dates';
 
 	let {
-		article
+		article,
+		showSummary = true
 	}: {
 		article: {
 			id: string;
@@ -17,6 +18,7 @@
 			categoryTitle: string;
 			topicTitle: string | null;
 		};
+		showSummary?: boolean;
 	} = $props();
 
 	const tag = $derived(
@@ -24,23 +26,21 @@
 	);
 </script>
 
-<article class="card group relative overflow-hidden transition hover:border-[var(--faint)]">
+<article class="news-card group relative overflow-hidden">
 	<a href={`/article/${article.id}`} class="block">
 		<div class="bg-soft relative aspect-[4/3] w-full overflow-hidden rounded-[calc(var(--radius)*1.1)]">
 			{#if article.imagePath}
-				<img
-					src={`/images/${article.imagePath}`}
-					alt=""
-					loading="lazy"
-					use:parallax
-					class="h-full w-full object-cover"
-				/>
-			{:else}
-				<div
-					class="bg-soft flex h-full w-full items-center justify-center text-4xl"
-				>
-					📰
+				<!-- parallax shifts the wrapper while scrolling, hover zooms the image itself -->
+				<div use:parallax class="h-full w-full">
+					<img
+						src={`/images/${article.imagePath}`}
+						alt=""
+						loading="lazy"
+						class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+					/>
 				</div>
+			{:else}
+				<div class="bg-soft flex h-full w-full items-center justify-center text-4xl">📰</div>
 			{/if}
 		</div>
 		<div class="space-y-2 p-4">
@@ -48,7 +48,9 @@
 				{tag}
 			</span>
 			<h3 class="font-display text-lg leading-snug font-bold">{article.headline}</h3>
-			<p class="text-muted line-clamp-3 text-sm leading-relaxed">{article.summary}</p>
+			{#if showSummary}
+				<p class="text-muted line-clamp-3 text-sm leading-relaxed">{article.summary}</p>
+			{/if}
 			<p class="text-faint text-xs">{shortDate(article.publishedAt)}</p>
 		</div>
 	</a>

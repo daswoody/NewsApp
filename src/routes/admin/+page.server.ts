@@ -6,7 +6,14 @@ import { articles, groups, mcpTokens, users } from '$lib/server/db/schema';
 import { hashPassword, sha256 } from '$lib/server/auth';
 import { getAppSettings, updateAppSettings } from '$lib/server/app-settings';
 import { deleteImage } from '$lib/server/images';
-import { DEFAULT_DARK, DEFAULT_LIGHT, parseTheme, type ThemeTokens } from '$lib/theme';
+import {
+	DEFAULT_DARK,
+	DEFAULT_LIGHT,
+	isFontId,
+	parseTheme,
+	parseTypography,
+	type ThemeTokens
+} from '$lib/theme';
 import type { Actions, PageServerLoad } from './$types';
 
 function requireAdmin(locals: App.Locals) {
@@ -61,6 +68,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		themeLight: parseTheme(settings.themeLight, DEFAULT_LIGHT),
 		themeDark: parseTheme(settings.themeDark, DEFAULT_DARK),
 		themeCustomized: Boolean(settings.themeLight || settings.themeDark),
+		typography: parseTypography({
+			headline: settings.fontHeadline,
+			articleHeadings: settings.fontArticleHeadings,
+			body: settings.fontBody
+		}),
+		showCardSummary: settings.showCardSummary,
 		mcpUrl: `${url.origin}/mcp`
 	};
 };
@@ -229,12 +242,12 @@ export const actions: Actions = {
 		const tokens: ThemeTokens = {
 			bg: String(form.get('bg') ?? fallback.bg),
 			card: String(form.get('card') ?? fallback.card),
+			newsCard: String(form.get('newsCard') ?? fallback.newsCard),
 			text: String(form.get('text') ?? fallback.text),
 			accent: String(form.get('accent') ?? fallback.accent),
 			border: String(form.get('border') ?? fallback.border),
 			cardBorder: form.get('cardBorder') === 'on',
-			radius: Number(form.get('radius') ?? fallback.radius),
-			font: form.get('font') === 'sans' ? 'sans' : 'serif'
+			radius: Number(form.get('radius') ?? fallback.radius)
 		};
 		// parseTheme validates and falls back invalid fields
 		const clean = parseTheme(JSON.stringify(tokens), fallback);
@@ -248,7 +261,31 @@ export const actions: Actions = {
 
 	resetTheme: async ({ locals }) => {
 		requireAdmin(locals);
-		await updateAppSettings({ themeLight: '', themeDark: '' });
+		await updateAppSettings({
+			themeLight: '',
+			themeDark: '',
+			fontHeadline: '',
+			fontArticleHeadings: '',
+			fontBody: ''
+		});
 		return { ok: true };
+	},
+
+	saveTypography: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const fontHeadline = String(form.get('headline') ?? '');
+		const fontArticleHeadings = String(form.get('articleHeadings') ?? '');
+		const fontBody = String(form.get('body') ?? '');
+		for (const id of [fontHeadline, fontArticleHeadings, fontBody]) {
+			if (id !== '' && !isFontId(id)) return fail(400, { error: 'Unbekannte Schriftart.' });
+		}
+		await updateAppSettings({
+			fontHeadline,
+			fontArticleHeadings,
+			fontBody,
+			showCardSummary: form.get('showCardSummary') === 'on'
+		});
+		return { ok: true, typographySaved: true };
 	}
 };
