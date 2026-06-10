@@ -1,7 +1,15 @@
 import { json } from '@sveltejs/kit';
 import { getRecentArticles, saveArticle, SaveArticleError } from '$lib/server/articles';
+import { getAppSettings } from '$lib/server/app-settings';
 import { userFromBearer } from '$lib/server/mcp-auth';
 import type { RequestHandler } from './$types';
+import type { User } from '$lib/server/db/schema';
+
+/** central/family mode: an admin token may write for every account */
+async function effectiveScope(user: User): Promise<string | null> {
+	const settings = await getAppSettings();
+	return settings.mcpGlobal && user.isAdmin ? null : user.id;
+}
 
 /** Token-authenticated REST variant of the MCP save_article tool. */
 export const POST: RequestHandler = async ({ request }) => {
@@ -14,7 +22,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	try {
-		const article = await saveArticle(user.id, {
+		const article = await saveArticle(await effectiveScope(user), {
 			categoryId: String(body.category_id ?? ''),
 			topicId: body.topic_id ? String(body.topic_id) : null,
 			headline: String(body.headline ?? ''),
@@ -38,5 +46,5 @@ export const GET: RequestHandler = async ({ request, url }) => {
 	const user = await userFromBearer(request);
 	if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
 	const days = Math.min(30, Math.max(1, Number(url.searchParams.get('days')) || 3));
-	return json({ articles: await getRecentArticles(user.id, days) });
+	return json({ articles: await getRecentArticles(await effectiveScope(user), days) });
 };

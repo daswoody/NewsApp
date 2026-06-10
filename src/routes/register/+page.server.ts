@@ -1,24 +1,20 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
-import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { createSession, hashPassword } from '$lib/server/auth';
+import { registrationAllowed } from '$lib/server/app-settings';
 import type { Actions, PageServerLoad } from './$types';
-
-function registrationAllowed(): boolean {
-	return env.ALLOW_REGISTRATION !== 'false';
-}
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) redirect(303, '/');
-	if (!registrationAllowed()) redirect(303, '/login');
+	if (!(await registrationAllowed())) redirect(303, '/login');
 	return {};
 };
 
 export const actions: Actions = {
 	default: async ({ request, cookies }) => {
-		if (!registrationAllowed()) {
+		if (!(await registrationAllowed())) {
 			return fail(403, { error: 'Die Registrierung ist derzeit deaktiviert.', nickname: '', email: '' });
 		}
 
@@ -44,9 +40,11 @@ export const actions: Actions = {
 			return fail(400, { error: 'Für diese E-Mail existiert bereits ein Account.', nickname, email });
 		}
 
+		// the very first account becomes the admin
+		const isAdmin = (await db.$count(users)) === 0;
 		const [user] = await db
 			.insert(users)
-			.values({ nickname, email, passwordHash: await hashPassword(password) })
+			.values({ nickname, email, passwordHash: await hashPassword(password), isAdmin })
 			.returning();
 
 		await createSession(cookies, user.id);

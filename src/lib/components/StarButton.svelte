@@ -15,9 +15,9 @@
 		type="submit"
 		aria-label={saved ? 'Nicht mehr merken' : 'Artikel merken'}
 		title={saved ? 'Nicht mehr merken' : 'Artikel merken'}
-		class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-950/70 backdrop-blur transition hover:bg-slate-800 {saved
-			? 'text-amber-400'
-			: 'text-slate-300'}"
+		class="flex h-9 w-9 items-center justify-center rounded-full bg-white/85 shadow-sm backdrop-blur transition hover:bg-white dark:bg-slate-950/70 dark:shadow-none dark:hover:bg-slate-800 {saved
+			? 'text-amber-500 dark:text-amber-400'
+			: 'text-stone-500 dark:text-slate-300'}"
 		onclick={(e) => e.stopPropagation()}
 	>
 		<svg

@@ -13,6 +13,7 @@ export const users = pgTable('users', {
 	email: text('email').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
 	deleteAfterDays: integer('delete_after_days').notNull().default(30),
+	isAdmin: boolean('is_admin').notNull().default(false),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });
 
@@ -42,6 +43,7 @@ export const topics = pgTable('topics', {
 		.references(() => categories.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
 	description: text('description').notNull().default(''),
+	position: integer('position').notNull().default(0),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });
 
@@ -103,6 +105,17 @@ export const mcpTokens = pgTable('mcp_tokens', {
 	lastUsedAt: timestamp('last_used_at', { withTimezone: true })
 });
 
+// single-row table (id = 1) for instance-wide admin settings
+export const appSettings = pgTable('app_settings', {
+	id: integer('id').primaryKey().default(1),
+	allowRegistration: boolean('allow_registration').notNull().default(true),
+	aiGlobal: boolean('ai_global').notNull().default(false),
+	mcpGlobal: boolean('mcp_global').notNull().default(false),
+	aiBaseUrl: text('ai_base_url').notNull().default(''),
+	aiApiKey: text('ai_api_key').notNull().default(''),
+	aiModel: text('ai_model').notNull().default('')
+});
+
 export type User = typeof users.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type Topic = typeof topics.$inferSelect;
@@ -111,3 +124,4 @@ export type Source = typeof sources.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type AiSettings = typeof aiSettings.$inferSelect;
 export type McpToken = typeof mcpTokens.$inferSelect;
+export type AppSettings = typeof appSettings.$inferSelect;

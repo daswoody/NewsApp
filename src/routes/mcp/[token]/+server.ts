@@ -18,7 +18,7 @@ function unauthorized(): Response {
 export const POST: RequestHandler = async ({ request, params }) => {
 	const user = await userFromToken(params.token);
 	if (!user) return unauthorized();
-	return handleMcpPost(user.id, request);
+	return handleMcpPost(user, request);
 };
 
 export const GET: RequestHandler = async () =>

@@ -1,9 +1,12 @@
 import {
 	getInterests,
+	getInterestsForAllUsers,
 	getRecentArticles,
 	saveArticle,
 	SaveArticleError
 } from '$lib/server/articles';
+import { getAppSettings } from '$lib/server/app-settings';
+import type { User } from '$lib/server/db/schema';
 
 /**
  * Minimal, stateless MCP server (Streamable HTTP transport, JSON responses).
@@ -106,10 +109,24 @@ function toolText(value: unknown, isError = false) {
 	};
 }
 
-async function callTool(userId: string, name: string, args: Record<string, unknown>) {
+interface ToolScope {
+	userId: string;
+	/** central/family mode: an admin token acts for every account */
+	central: boolean;
+}
+
+async function callTool(scope: ToolScope, name: string, args: Record<string, unknown>) {
 	switch (name) {
 		case 'get_interests': {
-			const interests = await getInterests(userId);
+			if (scope.central) {
+				const usersInterests = await getInterestsForAllUsers();
+				return toolText({
+					mode: 'central',
+					note: 'Research news for EVERY user below. Each category id belongs to the user it is listed under; save_article assigns the article to that user automatically.',
+					users: usersInterests
+				});
+			}
+			const interests = await getInterests(scope.userId);
 			if (interests.length === 0) {
 				return toolText(
 					'The user has not defined any interest categories yet. Ask them to add categories in the news app settings first.'
@@ -119,11 +136,13 @@ async function callTool(userId: string, name: string, args: Record<string, unkno
 		}
 		case 'list_recent_articles': {
 			const days = Math.min(30, Math.max(1, Number(args.days) || 3));
-			return toolText({ articles: await getRecentArticles(userId, days) });
+			return toolText({
+				articles: await getRecentArticles(scope.central ? null : scope.userId, days)
+			});
 		}
 		case 'save_article': {
 			try {
-				const article = await saveArticle(userId, {
+				const article = await saveArticle(scope.central ? null : scope.userId, {
 					categoryId: String(args.category_id ?? ''),
 					topicId: args.topic_id ? String(args.topic_id) : null,
 					headline: String(args.headline ?? ''),
@@ -150,7 +169,7 @@ async function callTool(userId: string, name: string, args: Record<string, unkno
 	}
 }
 
-async function handleMessage(userId: string, msg: JsonRpcMessage): Promise<object | null> {
+async function handleMessage(scope: ToolScope, msg: JsonRpcMessage): Promise<object | null> {
 	// Notifications (no id) just get acknowledged.
 	if (msg.id === undefined || msg.id === null) return null;
 
@@ -176,7 +195,7 @@ async function handleMessage(userId: string, msg: JsonRpcMessage): Promise<objec
 			const name = String(msg.params?.name ?? '');
 			const args = (msg.params?.arguments ?? {}) as Record<string, unknown>;
 			try {
-				const result = await callTool(userId, name, args);
+				const result = await callTool(scope, name, args);
 				if (result === null) return rpcError(msg.id, -32602, `Unknown tool: ${name}`);
 				return rpcResult(msg.id, result);
 			} catch (err) {
@@ -189,7 +208,7 @@ async function handleMessage(userId: string, msg: JsonRpcMessage): Promise<objec
 	}
 }
 
-export async function handleMcpPost(userId: string, request: Request): Promise<Response> {
+export async function handleMcpPost(user: User, request: Request): Promise<Response> {
 	let body: unknown;
 	try {
 		body = await request.json();
@@ -197,10 +216,13 @@ export async function handleMcpPost(userId: string, request: Request): Promise<R
 		return Response.json(rpcError(null, -32700, 'Parse error'), { status: 400 });
 	}
 
+	const settings = await getAppSettings();
+	const scope: ToolScope = { userId: user.id, central: settings.mcpGlobal && user.isAdmin };
+
 	const messages: JsonRpcMessage[] = Array.isArray(body) ? body : [body as JsonRpcMessage];
 	const responses: object[] = [];
 	for (const msg of messages) {
-		const res = await handleMessage(userId, msg);
+		const res = await handleMessage(scope, msg);
 		if (res) responses.push(res);
 	}
 
