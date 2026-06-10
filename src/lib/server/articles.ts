@@ -63,7 +63,8 @@ export async function saveArticle(scope: TokenScope, input: SaveArticleInput) {
 		topicId = topic.id;
 	}
 
-	const imagePath = input.imageUrl ? await cacheImage(input.imageUrl) : null;
+	const cached = input.imageUrl ? await cacheImage(input.imageUrl) : null;
+	const imagePath = cached?.name ?? null;
 
 	let publishedAt = new Date();
 	if (input.publishedAt) {
@@ -92,7 +93,7 @@ export async function saveArticle(scope: TokenScope, input: SaveArticleInput) {
 		await db.insert(sources).values(sourceRows);
 	}
 
-	return article;
+	return { article, imageError: cached?.error ?? null };
 }
 
 /** Categories + topics in the shape handed to the AI via MCP/REST. */

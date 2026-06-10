@@ -65,16 +65,20 @@ export const actions: Actions = {
 
 	// Creates a hot topic from this article's subject so future research
 	// picks up more news about it, and assigns the article to it.
-	makeTopic: async ({ locals, params }) => {
+	makeTopic: async ({ locals, params, request }) => {
 		if (!locals.user) redirect(303, '/login');
 		const article = await loadOwnArticle(locals.user.id, params.id);
 		if (article.topicId) return fail(400, { error: 'Artikel hat bereits ein Sub-Topic.' });
 
-		const title =
-			article.headline.length > 50 ? `${article.headline.slice(0, 47).trimEnd()}…` : article.headline;
+		const form = await request.formData();
+		const title = String(form.get('title') ?? '').trim();
+		const description = String(form.get('description') ?? '').trim();
+		if (!title || title.length > 40) {
+			return fail(400, { error: 'Bitte einen kurzen Titel angeben (max. 40 Zeichen).' });
+		}
 		const [topic] = await db
 			.insert(topics)
-			.values({ categoryId: article.categoryId, title, description: article.summary })
+			.values({ categoryId: article.categoryId, title, description })
 			.returning();
 		await db.update(articles).set({ topicId: topic.id }).where(eq(articles.id, article.id));
 		return { topicCreated: topic.title };

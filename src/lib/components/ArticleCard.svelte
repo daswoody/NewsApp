@@ -26,7 +26,7 @@
 
 <article class="card group relative overflow-hidden transition hover:border-[var(--faint)]">
 	<a href={`/article/${article.id}`} class="block">
-		<div class="bg-soft relative aspect-[4/3] w-full overflow-hidden">
+		<div class="bg-soft relative aspect-[4/3] w-full overflow-hidden rounded-[calc(var(--radius)*1.1)]">
 			{#if article.imagePath}
 				<img
 					src={`/images/${article.imagePath}`}

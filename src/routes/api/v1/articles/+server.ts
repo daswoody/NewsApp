@@ -14,7 +14,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	try {
-		const article = await saveArticle(scope, {
+		const { article, imageError } = await saveArticle(scope, {
 			categoryId: String(body.category_id ?? ''),
 			topicId: body.topic_id ? String(body.topic_id) : null,
 			headline: String(body.headline ?? ''),
@@ -25,7 +25,12 @@ export const POST: RequestHandler = async ({ request }) => {
 			sources: Array.isArray(body.sources) ? body.sources : []
 		});
 		return json(
-			{ saved: true, article_id: article.id, image_cached: article.imagePath !== null },
+			{
+				saved: true,
+				article_id: article.id,
+				image_cached: article.imagePath !== null,
+				...(imageError ? { image_error: imageError } : {})
+			},
 			{ status: 201 }
 		);
 	} catch (err) {
