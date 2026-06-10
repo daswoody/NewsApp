@@ -124,7 +124,12 @@ export const appSettings = pgTable('app_settings', {
 	allowRegistration: boolean('allow_registration').notNull().default(true),
 	// custom design tokens as JSON, empty = built-in defaults
 	themeLight: text('theme_light').notNull().default(''),
-	themeDark: text('theme_dark').notNull().default('')
+	themeDark: text('theme_dark').notNull().default(''),
+	// typography (font ids from the self-hosted registry, '' = default)
+	fontHeadline: text('font_headline').notNull().default(''),
+	fontArticleHeadings: text('font_article_headings').notNull().default(''),
+	fontBody: text('font_body').notNull().default(''),
+	showCardSummary: boolean('show_card_summary').notNull().default(true)
 });
 
 export type User = typeof users.$inferSelect;

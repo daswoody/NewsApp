@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, inArray } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { articles, categories, sources, topics, users } from '$lib/server/db/schema';
-import { cacheImage } from '$lib/server/images';
+import { cacheImage, deleteImage } from '$lib/server/images';
 import type { TokenScope } from '$lib/server/mcp-auth';
 
 export interface SaveArticleInput {
@@ -117,6 +117,96 @@ export async function getInterests(userId: string) {
 			.filter((t) => t.topic.categoryId === c.id)
 			.map((t) => ({ topic_id: t.topic.id, title: t.topic.title, description: t.topic.description }))
 	}));
+}
+
+export interface UpdateArticleInput {
+	articleId: string;
+	headline?: string | null;
+	summary?: string | null;
+	content?: string | null;
+	imageUrl?: string | null;
+	topicId?: string | null; // '' clears the topic
+	publishedAt?: string | null;
+	sources?: { name: string; url: string }[] | null;
+}
+
+async function inScope(scope: TokenScope, ownerId: string): Promise<boolean> {
+	if (scope.kind === 'user') return ownerId === scope.userId;
+	const owner = (await db.select().from(users).where(eq(users.id, ownerId)).limit(1))[0];
+	return Boolean(owner && owner.groupId === scope.groupId);
+}
+
+/**
+ * Updates an existing article. Only provided fields change; a provided
+ * sources array replaces the stored list, a new image replaces the cached
+ * file (kept untouched when the download fails).
+ */
+export async function updateArticle(scope: TokenScope, input: UpdateArticleInput) {
+	const article = (
+		await db.select().from(articles).where(eq(articles.id, input.articleId)).limit(1)
+	)[0];
+	if (!article || !(await inScope(scope, article.userId))) {
+		throw new SaveArticleError(`Unknown article_id: ${input.articleId}`);
+	}
+
+	const updates: Partial<typeof articles.$inferInsert> = {};
+
+	if (input.headline?.trim()) updates.headline = input.headline.trim();
+	if (input.summary?.trim()) updates.summary = input.summary.trim();
+	if (input.content?.trim()) updates.content = input.content.trim();
+
+	if (input.publishedAt) {
+		const parsed = new Date(input.publishedAt);
+		if (!Number.isNaN(parsed.getTime())) updates.publishedAt = parsed;
+	}
+
+	if (input.topicId !== undefined && input.topicId !== null) {
+		if (input.topicId === '') {
+			updates.topicId = null;
+		} else {
+			const topic = (
+				await db
+					.select()
+					.from(topics)
+					.where(and(eq(topics.id, input.topicId), eq(topics.categoryId, article.categoryId)))
+					.limit(1)
+			)[0];
+			if (!topic) {
+				throw new SaveArticleError(`Unknown topic_id for this category: ${input.topicId}`);
+			}
+			updates.topicId = topic.id;
+		}
+	}
+
+	let imageError: string | null = null;
+	if (input.imageUrl) {
+		const cached = await cacheImage(input.imageUrl);
+		if (cached.name) {
+			await deleteImage(article.imagePath);
+			updates.imagePath = cached.name;
+		} else {
+			imageError = cached.error ?? 'image download failed';
+		}
+	}
+
+	let updated = article;
+	if (Object.keys(updates).length > 0) {
+		[updated] = await db
+			.update(articles)
+			.set(updates)
+			.where(eq(articles.id, article.id))
+			.returning();
+	}
+
+	if (Array.isArray(input.sources)) {
+		await db.delete(sources).where(eq(sources.articleId, article.id));
+		const sourceRows = input.sources
+			.filter((s) => s?.name?.trim() && s?.url?.trim())
+			.map((s) => ({ articleId: article.id, name: s.name.trim(), url: s.url.trim() }));
+		if (sourceRows.length > 0) await db.insert(sources).values(sourceRows);
+	}
+
+	return { article: updated, imageError };
 }
 
 /** Interests of every group member, for group MCP tokens. */

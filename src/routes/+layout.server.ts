@@ -1,16 +1,24 @@
 import { getAppSettings } from '$lib/server/app-settings';
-import { buildThemeCss, DEFAULT_DARK, DEFAULT_LIGHT, parseTheme } from '$lib/theme';
+import {
+	buildThemeCss,
+	DEFAULT_DARK,
+	DEFAULT_LIGHT,
+	parseTheme,
+	parseTypography
+} from '$lib/theme';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	const settings = await getAppSettings();
-	const themeCss =
-		settings.themeLight || settings.themeDark
-			? buildThemeCss(
-					parseTheme(settings.themeLight, DEFAULT_LIGHT),
-					parseTheme(settings.themeDark, DEFAULT_DARK)
-				)
-			: '';
+	const themeCss = buildThemeCss(
+		parseTheme(settings.themeLight, DEFAULT_LIGHT),
+		parseTheme(settings.themeDark, DEFAULT_DARK),
+		parseTypography({
+			headline: settings.fontHeadline,
+			articleHeadings: settings.fontArticleHeadings,
+			body: settings.fontBody
+		})
+	);
 
 	return {
 		user: locals.user

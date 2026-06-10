@@ -7,40 +7,97 @@
 export interface ThemeTokens {
 	bg: string;
 	card: string;
+	newsCard: string;
 	text: string;
 	accent: string;
 	border: string;
 	cardBorder: boolean;
 	radius: number; // px
-	font: 'serif' | 'sans';
 }
 
 export const DEFAULT_LIGHT: ThemeTokens = {
 	bg: '#f6f5f1',
 	card: '#ffffff',
+	newsCard: '#ffffff',
 	text: '#1c1917',
 	accent: '#0d9488',
 	border: '#e7e5e4',
 	cardBorder: false,
-	radius: 16,
-	font: 'serif'
+	radius: 16
 };
 
 export const DEFAULT_DARK: ThemeTokens = {
 	bg: '#020617',
 	card: '#0f172a',
+	newsCard: '#0f172a',
 	text: '#f1f5f9',
 	accent: '#2dd4bf',
 	border: '#1e293b',
 	cardBorder: true,
-	radius: 16,
-	font: 'serif'
+	radius: 16
 };
 
-const FONT_STACKS: Record<ThemeTokens['font'], string> = {
-	serif: "Georgia, 'Times New Roman', ui-serif, serif",
-	sans: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+/* ---------- fonts (self-hosted Google Fonts via @fontsource) ---------- */
+
+export interface Typography {
+	headline: string; // card headlines + article title
+	articleHeadings: string; // h2/h3 inside articles ('' = same as headline)
+	body: string; // article body text
+}
+
+export const DEFAULT_TYPOGRAPHY: Typography = {
+	headline: 'system-serif',
+	articleHeadings: '',
+	body: 'system-sans'
 };
+
+const FONT_FAMILIES: Record<string, string> = {
+	'system-serif': "Georgia, 'Times New Roman', ui-serif, serif",
+	'system-sans': "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+	inter: "'Inter', ui-sans-serif, system-ui, sans-serif",
+	roboto: "'Roboto', ui-sans-serif, system-ui, sans-serif",
+	'open-sans': "'Open Sans', ui-sans-serif, system-ui, sans-serif",
+	montserrat: "'Montserrat', ui-sans-serif, system-ui, sans-serif",
+	poppins: "'Poppins', ui-sans-serif, system-ui, sans-serif",
+	'noto-sans': "'Noto Sans', ui-sans-serif, system-ui, sans-serif",
+	merriweather: "'Merriweather', Georgia, ui-serif, serif",
+	'playfair-display': "'Playfair Display', Georgia, ui-serif, serif",
+	lora: "'Lora', Georgia, ui-serif, serif",
+	'source-serif-4': "'Source Serif 4', Georgia, ui-serif, serif"
+};
+
+export const FONT_OPTIONS: { id: string; label: string }[] = [
+	{ id: 'system-serif', label: 'System Serif (Georgia)' },
+	{ id: 'system-sans', label: 'System Sans' },
+	{ id: 'inter', label: 'Inter' },
+	{ id: 'roboto', label: 'Roboto' },
+	{ id: 'open-sans', label: 'Open Sans' },
+	{ id: 'montserrat', label: 'Montserrat' },
+	{ id: 'poppins', label: 'Poppins' },
+	{ id: 'noto-sans', label: 'Noto Sans' },
+	{ id: 'merriweather', label: 'Merriweather' },
+	{ id: 'playfair-display', label: 'Playfair Display' },
+	{ id: 'lora', label: 'Lora' },
+	{ id: 'source-serif-4', label: 'Source Serif 4' }
+];
+
+export function isFontId(id: string): boolean {
+	return id in FONT_FAMILIES;
+}
+
+function fontFamily(id: string, fallbackId: string): string {
+	return FONT_FAMILIES[id] ?? FONT_FAMILIES[fallbackId];
+}
+
+export function parseTypography(raw: Partial<Typography>): Typography {
+	return {
+		headline: isFontId(raw.headline ?? '') ? raw.headline! : DEFAULT_TYPOGRAPHY.headline,
+		articleHeadings: isFontId(raw.articleHeadings ?? '') ? raw.articleHeadings! : '',
+		body: isFontId(raw.body ?? '') ? raw.body! : DEFAULT_TYPOGRAPHY.body
+	};
+}
+
+/* ---------- parsing + CSS generation ---------- */
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
@@ -51,14 +108,14 @@ export function parseTheme(json: string, fallback: ThemeTokens): ThemeTokens {
 		return {
 			bg: HEX.test(raw.bg ?? '') ? raw.bg! : fallback.bg,
 			card: HEX.test(raw.card ?? '') ? raw.card! : fallback.card,
+			newsCard: HEX.test(raw.newsCard ?? '') ? raw.newsCard! : fallback.newsCard,
 			text: HEX.test(raw.text ?? '') ? raw.text! : fallback.text,
 			accent: HEX.test(raw.accent ?? '') ? raw.accent! : fallback.accent,
 			border: HEX.test(raw.border ?? '') ? raw.border! : fallback.border,
 			cardBorder: typeof raw.cardBorder === 'boolean' ? raw.cardBorder : fallback.cardBorder,
 			radius: Number.isFinite(raw.radius)
 				? Math.min(32, Math.max(0, Number(raw.radius)))
-				: fallback.radius,
-			font: raw.font === 'sans' || raw.font === 'serif' ? raw.font : fallback.font
+				: fallback.radius
 		};
 	} catch {
 		return fallback;
@@ -78,18 +135,23 @@ function tokenBlock(t: ThemeTokens): string {
 	return [
 		`--bg: ${t.bg};`,
 		`--card: ${t.card};`,
+		`--news-card: ${t.newsCard};`,
 		`--text: ${t.text};`,
 		`--accent: ${t.accent};`,
 		`--on-accent: ${onColor(t.accent)};`,
 		`--border: ${t.border};`,
 		`--card-border: ${t.cardBorder ? t.border : 'transparent'};`,
-		`--radius: ${t.radius}px;`,
-		`--font-display: ${FONT_STACKS[t.font]};`
+		`--radius: ${t.radius}px;`
 	].join(' ');
 }
 
-export function buildThemeCss(light: ThemeTokens, dark: ThemeTokens): string {
+export function buildThemeCss(light: ThemeTokens, dark: ThemeTokens, typo: Typography): string {
+	const fonts = [
+		`--font-display: ${fontFamily(typo.headline, 'system-serif')};`,
+		`--font-article-headings: ${fontFamily(typo.articleHeadings, typo.headline)};`,
+		`--font-body: ${fontFamily(typo.body, 'system-sans')};`
+	].join(' ');
 	// doubled :root selectors out-rank the defaults in app.css regardless of
 	// the order in which the browser receives the two stylesheets
-	return `:root:root { ${tokenBlock(light)} }\n:root:root.dark { ${tokenBlock(dark)} }`;
+	return `:root:root { ${tokenBlock(light)} ${fonts} }\n:root:root.dark { ${tokenBlock(dark)} }`;
 }

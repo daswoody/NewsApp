@@ -3,6 +3,7 @@ import { and, desc, eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { db } from '$lib/server/db';
 import { articles, categories, topics } from '$lib/server/db/schema';
+import { getAppSettings } from '$lib/server/app-settings';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -56,6 +57,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	return {
 		nickname: locals.user.nickname,
+		showCardSummary: (await getAppSettings()).showCardSummary,
 		categories: cats.map((c) => ({ id: c.id, title: c.title })),
 		topics: topicRows.map((t) => ({ id: t.id, title: t.title })),
 		selectedCategoryId: selectedCategory?.id ?? null,

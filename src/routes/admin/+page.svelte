@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import { FONT_OPTIONS } from '$lib/theme';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -286,8 +287,12 @@
 							<input name="bg" type="color" value={theme.bg} class="input h-9 p-1" />
 						</label>
 						<label class="block">
-							<span class={labelClass}>Karten</span>
+							<span class={labelClass}>Karten (UI)</span>
 							<input name="card" type="color" value={theme.card} class="input h-9 p-1" />
+						</label>
+						<label class="block">
+							<span class={labelClass}>News-Karten</span>
+							<input name="newsCard" type="color" value={theme.newsCard} class="input h-9 p-1" />
 						</label>
 						<label class="block">
 							<span class={labelClass}>Text</span>
@@ -310,13 +315,6 @@
 						<input name="cardBorder" type="checkbox" checked={theme.cardBorder} class="h-4 w-4 accent-[var(--accent)]" />
 						Karten mit Rahmen
 					</label>
-					<label class="block">
-						<span class={labelClass}>Headline-Schrift</span>
-						<select name="font" class="input">
-							<option value="serif" selected={theme.font === 'serif'}>Serif (klassisch)</option>
-							<option value="sans" selected={theme.font === 'sans'}>Sans (modern)</option>
-						</select>
-					</label>
 					<div class="flex items-center gap-3">
 						<button type="submit" class="btn-primary px-4 py-1.5 text-sm">Speichern</button>
 						{#if form && 'themeSaved' in form && form.themeSaved === mode}
@@ -326,5 +324,56 @@
 				</form>
 			{/each}
 		</div>
+
+		<!-- typography + card options (apply to both modes) -->
+		<form
+			method="POST"
+			action="?/saveTypography"
+			use:enhance={() => async ({ update }) => update({ reset: false })}
+			class="subcard mt-4 space-y-3 p-3"
+		>
+			<p class="text-sm font-semibold">Schriften & News-Karten</p>
+			<p class="text-faint text-xs">
+				Selbst gehostete Google Fonts – keine Verbindung zu Google, der Browser lädt nur die
+				ausgewählten Schriften.
+			</p>
+			<div class="grid gap-3 sm:grid-cols-3">
+				<label class="block">
+					<span class={labelClass}>Headlines (Karten + Artikel-Titel)</span>
+					<select name="headline" class="input">
+						{#each FONT_OPTIONS as font (font.id)}
+							<option value={font.id} selected={data.typography.headline === font.id}>{font.label}</option>
+						{/each}
+					</select>
+				</label>
+				<label class="block">
+					<span class={labelClass}>Zwischenüberschriften im Artikel</span>
+					<select name="articleHeadings" class="input">
+						<option value="" selected={data.typography.articleHeadings === ''}>Wie Headlines</option>
+						{#each FONT_OPTIONS as font (font.id)}
+							<option value={font.id} selected={data.typography.articleHeadings === font.id}>{font.label}</option>
+						{/each}
+					</select>
+				</label>
+				<label class="block">
+					<span class={labelClass}>Fließtext im Artikel</span>
+					<select name="body" class="input">
+						{#each FONT_OPTIONS as font (font.id)}
+							<option value={font.id} selected={data.typography.body === font.id}>{font.label}</option>
+						{/each}
+					</select>
+				</label>
+			</div>
+			<label class="flex items-center gap-2 text-sm">
+				<input name="showCardSummary" type="checkbox" checked={data.showCardSummary} class="h-4 w-4 accent-[var(--accent)]" />
+				Vorschautext auf den News-Karten anzeigen
+			</label>
+			<div class="flex items-center gap-3">
+				<button type="submit" class="btn-primary px-4 py-1.5 text-sm">Speichern</button>
+				{#if form && 'typographySaved' in form && form.typographySaved}
+					<span class="text-accent text-sm">Gespeichert ✓</span>
+				{/if}
+			</div>
+		</form>
 	</div>
 </div>

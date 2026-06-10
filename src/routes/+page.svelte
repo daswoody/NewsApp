@@ -117,7 +117,7 @@
 				</h2>
 				<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 					{#each group.items as article (article.id)}
-						<ArticleCard {article} />
+						<ArticleCard {article} showSummary={data.showCardSummary} />
 					{/each}
 				</div>
 			</section>

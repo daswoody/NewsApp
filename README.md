@@ -9,7 +9,9 @@ Unter jedem Artikel kannst du einer angebundenen KI (OpenAI-kompatible API) Rüc
 
 - Registrierung/Login; der erste Account wird automatisch Admin
 - Admin-Panel: Nutzer anlegen/löschen, Registrierung an-/abschalten, Gruppen-Verwaltung,
-  Theme-Editor (Farben, Eckenradius, Headline-Schrift je Light/Dark Mode)
+  Theme-Editor (Farben inkl. getrennter UI-/News-Karten-Farbe und Eckenradius je
+  Light/Dark Mode; selbst gehostete Google Fonts für Headlines, Artikel-Zwischenüberschriften
+  und Fließtext; Vorschautext auf Karten abschaltbar)
 - Konto-Einstellungen: Spitzname/Passwort ändern, Account löschen, Löschintervall
 - Kategorien + Hot Topics mit Beschreibungstexten als Recherche-Auftrag für die KI,
   per Pfeiltasten sortierbar (bestimmt die Chip-Reihenfolge)
@@ -104,7 +106,9 @@ In **Einstellungen → KI & MCP** einen Token erstellen. Der MCP-Endpoint ist
 ```
 
 **MCP-Tools:** `get_interests` (Kategorien + Hot Topics mit Beschreibungen),
-`list_recent_articles` (Duplikat-Vermeidung), `save_article` (Artikel speichern).
+`list_recent_articles` (Duplikat-Vermeidung), `save_article` (Artikel speichern),
+`update_article` (bestehenden Artikel aktualisieren, z. B. Bild nach `image_error`
+nachliefern oder Quellen ersetzen).
 
 **Recherche starten** (MCP ist „pull" – die KI muss angestoßen werden, z. B. manuell oder als
 wiederkehrende Aufgabe):
@@ -122,6 +126,7 @@ wiederkehrende Aufgabe):
 | `GET` | `/api/v1/interests` | Kategorien + Hot Topics |
 | `GET` | `/api/v1/articles?days=3` | Headlines der letzten Tage |
 | `POST` | `/api/v1/articles` | Artikel speichern (`category_id`, `topic_id?`, `headline`, `summary`, `content`, `image_url?`, `published_at?`, `sources[]`) |
+| `PATCH` | `/api/v1/articles/:id` | Artikel aktualisieren (nur übergebene Felder; `sources[]` ersetzt die Liste) |
 
 ## Artikel-Chat verbinden
 
