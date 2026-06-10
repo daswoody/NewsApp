@@ -78,8 +78,8 @@
 					closeEditors();
 				}}
 				class="rounded-xl py-2 text-sm font-medium transition {tab === id
-					? 'bg-stone-900 text-white dark:bg-white dark:text-slate-900'
-					: 'text-muted hover:text-stone-900 dark:hover:text-slate-100'}"
+					? 'bg-[var(--text)] text-[var(--bg)]'
+					: 'text-muted hover:text-[var(--text)]'}"
 			>
 				{label}
 			</button>
@@ -96,7 +96,7 @@
 	{#if tab === 'kategorien'}
 		<div class="mt-5 space-y-3">
 			{#if data.categories.length === 0}
-				<p class="text-muted rounded-xl border border-dashed border-stone-300 p-6 text-center text-sm dark:border-slate-700">
+				<p class="text-muted rounded-xl border-token border border-dashed p-6 text-center text-sm">
 					Noch keine Kategorien. Lege deine erste Interessen-Kategorie an – Titel für die Tags,
 					Beschreibung als Recherche-Auftrag für die KI.
 				</p>
@@ -114,24 +114,24 @@
 								<p class="text-faint truncate text-xs">{cat.description}</p>
 							{/if}
 						</div>
-						<span class="text-muted shrink-0 rounded-full bg-stone-100 px-2 py-0.5 text-xs dark:bg-slate-800">
+						<span class="text-muted shrink-0 bg-soft rounded-full px-2 py-0.5 text-xs">
 							{cat.topics.length} Topics
 						</span>
 						<span class="flex shrink-0 flex-col gap-0.5">
 							<form method="POST" action="?/moveCategory" use:enhance>
 								<input type="hidden" name="id" value={cat.id} />
 								<input type="hidden" name="dir" value="up" />
-								<button type="submit" disabled={catIndex === 0} aria-label="Nach oben" class="text-faint block px-1 leading-none transition hover:text-teal-600 disabled:opacity-30 dark:hover:text-teal-400">▲</button>
+								<button type="submit" disabled={catIndex === 0} aria-label="Nach oben" class="text-faint block px-1 leading-none transition hover:text-[var(--accent)] disabled:opacity-30">▲</button>
 							</form>
 							<form method="POST" action="?/moveCategory" use:enhance>
 								<input type="hidden" name="id" value={cat.id} />
 								<input type="hidden" name="dir" value="down" />
-								<button type="submit" disabled={catIndex === data.categories.length - 1} aria-label="Nach unten" class="text-faint block px-1 leading-none transition hover:text-teal-600 disabled:opacity-30 dark:hover:text-teal-400">▼</button>
+								<button type="submit" disabled={catIndex === data.categories.length - 1} aria-label="Nach unten" class="text-faint block px-1 leading-none transition hover:text-[var(--accent)] disabled:opacity-30">▼</button>
 							</form>
 						</span>
 					</summary>
 
-					<div class="border-t border-stone-200 p-4 dark:border-slate-800">
+					<div class="border-token border-t p-4">
 						{#if editingCategory === cat.id}
 							<form method="POST" action="?/updateCategory" use:enhance={() => async ({ update }) => { closeEditors(); await update(); }} class="space-y-3">
 								<input type="hidden" name="id" value={cat.id} />
@@ -171,7 +171,7 @@
 						<p class="text-faint mb-2 text-xs font-semibold tracking-wide uppercase">Hot Topics</p>
 						<ul class="space-y-2">
 							{#each cat.topics as topic, topicIndex (topic.id)}
-								<li class="rounded-xl border border-stone-200 bg-stone-50 p-3 dark:border-slate-800 dark:bg-slate-950/60">
+								<li class="subcard p-3">
 									{#if editingTopic === topic.id}
 										<form method="POST" action="?/updateTopic" use:enhance={() => async ({ update }) => { closeEditors(); await update(); }} class="space-y-2">
 											<input type="hidden" name="id" value={topic.id} />
@@ -188,12 +188,12 @@
 												<form method="POST" action="?/moveTopic" use:enhance>
 													<input type="hidden" name="id" value={topic.id} />
 													<input type="hidden" name="dir" value="up" />
-													<button type="submit" disabled={topicIndex === 0} aria-label="Nach oben" class="text-faint block px-1 text-xs leading-none transition hover:text-teal-600 disabled:opacity-30 dark:hover:text-teal-400">▲</button>
+													<button type="submit" disabled={topicIndex === 0} aria-label="Nach oben" class="text-faint block px-1 text-xs leading-none transition hover:text-[var(--accent)] disabled:opacity-30">▲</button>
 												</form>
 												<form method="POST" action="?/moveTopic" use:enhance>
 													<input type="hidden" name="id" value={topic.id} />
 													<input type="hidden" name="dir" value="down" />
-													<button type="submit" disabled={topicIndex === cat.topics.length - 1} aria-label="Nach unten" class="text-faint block px-1 text-xs leading-none transition hover:text-teal-600 disabled:opacity-30 dark:hover:text-teal-400">▼</button>
+													<button type="submit" disabled={topicIndex === cat.topics.length - 1} aria-label="Nach unten" class="text-faint block px-1 text-xs leading-none transition hover:text-[var(--accent)] disabled:opacity-30">▼</button>
 												</form>
 											</span>
 											<div class="min-w-0 flex-1">
@@ -221,7 +221,7 @@
 						</ul>
 
 						{#if addingTopicFor === cat.id}
-							<form method="POST" action="?/addTopic" use:enhance={() => async ({ update }) => { closeEditors(); await update(); }} class="mt-3 space-y-2 rounded-xl border border-teal-600/30 bg-stone-50 p-3 dark:bg-slate-950/60">
+							<form method="POST" action="?/addTopic" use:enhance={() => async ({ update }) => { closeEditors(); await update(); }} class="mt-3 space-y-2 rounded-xl border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] bg-soft p-3">
 								<input type="hidden" name="categoryId" value={cat.id} />
 								<input name="title" required maxlength="40" placeholder="Kurzer Titel, z. B. Claude" class="input" />
 								<textarea name="description" rows="2" placeholder="Was interessiert dich daran? (für die KI)" class="input"></textarea>
@@ -231,7 +231,7 @@
 								</div>
 							</form>
 						{:else}
-							<button type="button" onclick={() => { closeEditors(); addingTopicFor = cat.id; }} class="text-muted mt-3 w-full rounded-xl border border-dashed border-stone-300 py-2 text-sm transition hover:border-teal-600 hover:text-teal-700 dark:border-slate-700 dark:hover:border-teal-500 dark:hover:text-teal-300">
+							<button type="button" onclick={() => { closeEditors(); addingTopicFor = cat.id; }} class="text-muted mt-3 w-full rounded-xl border-token border border-dashed py-2 text-sm transition hover:border-[var(--accent)] hover:text-[var(--accent)]">
 								+ Hot Topic hinzufügen
 							</button>
 						{/if}
@@ -241,10 +241,10 @@
 		</div>
 
 		<!-- sticky add-category button -->
-		<div class="fixed inset-x-0 bottom-0 bg-gradient-to-t from-[#f6f5f1] via-[#f6f5f1]/95 to-transparent pt-8 pb-[max(1rem,env(safe-area-inset-bottom))] dark:from-slate-950 dark:via-slate-950/95">
+		<div class="fixed inset-x-0 bottom-0 bottom-fade pt-8 pb-[max(1rem,env(safe-area-inset-bottom))]">
 			<div class="mx-auto max-w-3xl px-4">
 				{#if showAddCategory}
-					<form method="POST" action="?/addCategory" use:enhance={() => async ({ update }) => { closeEditors(); await update(); }} class="card space-y-2 border border-stone-300 p-4 shadow-xl dark:border-slate-700">
+					<form method="POST" action="?/addCategory" use:enhance={() => async ({ update }) => { closeEditors(); await update(); }} class="card border-token space-y-2 border p-4">
 						<input name="title" required maxlength="40" placeholder="Kurzer Titel, z. B. AI" class="input" />
 						<textarea name="description" rows="2" placeholder="Was interessiert dich? z. B. Neuigkeiten zu KI-Modellen, Tools und Forschung" class="input"></textarea>
 						<div class="flex gap-2">
@@ -253,7 +253,7 @@
 						</div>
 					</form>
 				{:else}
-					<button type="button" onclick={() => { closeEditors(); showAddCategory = true; }} class="btn-primary w-full rounded-2xl py-3 text-sm font-bold shadow-xl">
+					<button type="button" onclick={() => { closeEditors(); showAddCategory = true; }} class="btn-primary w-full rounded-2xl py-3 text-sm font-bold">
 						+ Kategorie hinzufügen
 					</button>
 				{/if}
@@ -277,7 +277,7 @@
 					</div>
 					<button type="submit" class="btn-primary px-5 py-2 text-sm">Speichern</button>
 					{#if form && 'retentionSaved' in form && form.retentionSaved}
-						<span class="pb-2 text-sm text-teal-700 dark:text-teal-400">Gespeichert ✓</span>
+						<span class="pb-2 text-sm text-accent">Gespeichert ✓</span>
 					{/if}
 				</form>
 			</div>
@@ -291,7 +291,7 @@
 					</div>
 					<button type="submit" class="btn-primary px-5 py-2 text-sm">Speichern</button>
 					{#if form && 'profileSaved' in form && form.profileSaved}
-						<span class="pb-2 text-sm text-teal-700 dark:text-teal-400">✓</span>
+						<span class="pb-2 text-sm text-accent">✓</span>
 					{/if}
 				</form>
 				<p class="text-faint mt-2 text-xs">Angemeldet als {data.email}</p>
@@ -311,7 +311,7 @@
 					<div class="flex items-center gap-3">
 						<button type="submit" class="btn-primary px-5 py-2 text-sm">Passwort ändern</button>
 						{#if form && 'passwordSaved' in form && form.passwordSaved}
-							<span class="text-sm text-teal-700 dark:text-teal-400">Geändert ✓</span>
+							<span class="text-sm text-accent">Geändert ✓</span>
 						{/if}
 					</div>
 				</form>
@@ -348,42 +348,46 @@
 	<!-- ============ Tab 3: AI + MCP ============ -->
 	{#if tab === 'ki'}
 		<div class="mt-5 space-y-5">
-			<div class="card p-5">
-				<h2 class="font-semibold">KI für Artikel-Rückfragen</h2>
-				{#if data.aiGlobal}
+			{#if data.groupName}
+				<div class="card p-5">
+					<h2 class="font-semibold">Von deiner Gruppe verwaltet</h2>
 					<p class="text-muted mt-1 text-sm leading-relaxed">
-						Die KI-Verbindung wird zentral vom Admin verwaltet – du musst hier nichts einstellen.
+						Du bist Mitglied der Gruppe <strong class="text-accent">{data.groupName}</strong>.
+						Die KI-Verbindung für Artikel-Rückfragen und die MCP-Recherche werden zentral über die
+						Gruppe verwaltet – du musst hier nichts einstellen.
 						{#if data.isAdmin}
-							Konfigurieren kannst du sie im <a href="/admin" class="text-teal-700 underline dark:text-teal-400">Admin-Panel</a>.
+							Konfigurieren kannst du beides im <a href="/admin" class="text-accent underline">Admin-Panel</a>.
 						{/if}
 					</p>
-				{:else}
-					<p class="text-muted mt-1 text-sm leading-relaxed">
-						OpenAI-kompatible API für den Chat unter den Artikeln – funktioniert mit Claude
-						(<code class="text-xs">https://api.anthropic.com/v1</code>), OpenAI, Ollama
-						(<code class="text-xs">http://host:11434/v1</code>), LM Studio u. a.
-					</p>
-					<form method="POST" action="?/saveAi" use:enhance class="mt-4 space-y-3">
-						<div>
-							<span class={labelClass}>Base-URL</span>
-							<input name="baseUrl" type="url" placeholder="https://api.anthropic.com/v1" value={data.ai.baseUrl} class="input" />
-						</div>
-						<div>
-							<span class={labelClass}>Modell</span>
-							<input name="model" placeholder="claude-sonnet-4-6" value={data.ai.model} class="input" />
-						</div>
-						<div>
-							<span class={labelClass}>API-Key {data.ai.hasApiKey ? '(gespeichert – leer lassen zum Behalten)' : ''}</span>
-							<input name="apiKey" type="password" placeholder={data.ai.hasApiKey ? '••••••••' : 'sk-…'} autocomplete="off" class="input" />
-						</div>
-						<div class="flex items-center gap-3">
-							<button type="submit" class="btn-primary px-5 py-2 text-sm">Speichern</button>
-							{#if form && 'aiSaved' in form && form.aiSaved}
-								<span class="text-sm text-teal-700 dark:text-teal-400">Gespeichert ✓</span>
-							{/if}
-						</div>
-					</form>
-				{/if}
+				</div>
+			{:else}
+			<div class="card p-5">
+				<h2 class="font-semibold">KI für Artikel-Rückfragen</h2>
+				<p class="text-muted mt-1 text-sm leading-relaxed">
+					OpenAI-kompatible API für den Chat unter den Artikeln – funktioniert mit Claude
+					(<code class="text-xs">https://api.anthropic.com/v1</code>), OpenAI, Ollama
+					(<code class="text-xs">http://host:11434/v1</code>), LM Studio u. a.
+				</p>
+				<form method="POST" action="?/saveAi" use:enhance class="mt-4 space-y-3">
+					<div>
+						<span class={labelClass}>Base-URL</span>
+						<input name="baseUrl" type="url" placeholder="https://api.anthropic.com/v1" value={data.ai.baseUrl} class="input" />
+					</div>
+					<div>
+						<span class={labelClass}>Modell</span>
+						<input name="model" placeholder="claude-sonnet-4-6" value={data.ai.model} class="input" />
+					</div>
+					<div>
+						<span class={labelClass}>API-Key {data.ai.hasApiKey ? '(gespeichert – leer lassen zum Behalten)' : ''}</span>
+						<input name="apiKey" type="password" placeholder={data.ai.hasApiKey ? '••••••••' : 'sk-…'} autocomplete="off" class="input" />
+					</div>
+					<div class="flex items-center gap-3">
+						<button type="submit" class="btn-primary px-5 py-2 text-sm">Speichern</button>
+						{#if form && 'aiSaved' in form && form.aiSaved}
+							<span class="text-accent text-sm">Gespeichert ✓</span>
+						{/if}
+					</div>
+				</form>
 			</div>
 
 			<div class="card p-5">
@@ -392,16 +396,9 @@
 					Über den MCP-Server holt sich deine KI (Claude Desktop, lokales LLM-Setup) deine
 					Interessen und speichert recherchierte Artikel zurück in die App.
 				</p>
-				{#if data.mcpGlobal && data.isAdmin}
-					<p class="mt-2 rounded-lg bg-teal-700/10 px-3 py-2 text-sm text-teal-800 dark:bg-teal-500/10 dark:text-teal-300">
-						Familienmodus aktiv: Deine Tokens recherchieren für <strong>alle Nutzer</strong> –
-						get_interests liefert die Interessen jedes Accounts und save_article ordnet Artikel
-						automatisch dem richtigen Nutzer zu.
-					</p>
-				{/if}
-				<div class="mt-3 rounded-xl bg-stone-100 p-3 dark:bg-slate-950">
+				<div class="bg-soft mt-3 rounded-xl p-3">
 					<p class="text-faint text-xs">Endpoint (Streamable HTTP)</p>
-					<code class="text-sm break-all text-teal-700 dark:text-teal-300">{data.mcpUrl}</code>
+					<code class="text-sm break-all text-accent">{data.mcpUrl}</code>
 				</div>
 
 				<h3 class="mt-5 text-sm font-semibold">Zugriffstokens</h3>
@@ -419,7 +416,7 @@
 				{/if}
 				<ul class="mt-2 space-y-2">
 					{#each data.tokens as token (token.id)}
-						<li class="flex items-center gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/60">
+						<li class="subcard flex items-center gap-3 px-3 py-2">
 							<div class="min-w-0 flex-1">
 								<p class="truncate text-sm font-medium">{token.label}</p>
 								<p class="text-faint text-xs">
@@ -446,27 +443,28 @@
 
 				<h3 class="mt-6 text-sm font-semibold">Claude Desktop einrichten</h3>
 				<p class="text-muted mt-1 text-sm">
-					<strong class="text-stone-700 dark:text-slate-300">Empfohlen (ohne Node.js):</strong>
+					<strong class="text-[var(--text)]">Empfohlen (ohne Node.js):</strong>
 					Custom Connector mit geheimer URL – Settings → Connectors → „Add custom connector", als URL
 					<code class="text-xs">{data.mcpUrl}/&lt;DEIN_TOKEN&gt;</code> eintragen (wird beim
 					Erstellen eines Tokens oben fertig angezeigt), keine Authentifizierung nötig.
 					Die URL enthält das Geheimnis – nicht weitergeben.
 				</p>
 				<p class="text-muted mt-3 text-sm">
-					<strong class="text-stone-700 dark:text-slate-300">Alternative (Node.js erforderlich):</strong> per
+					<strong class="text-[var(--text)]">Alternative (Node.js erforderlich):</strong> per
 					<code class="text-xs">mcp-remote</code> in der <code class="text-xs">claude_desktop_config.json</code>:
 				</p>
-				<pre class="mt-2 overflow-x-auto rounded-xl bg-stone-100 p-3 text-xs leading-relaxed dark:bg-slate-950">{claudeConfig}</pre>
+				<pre class="bg-soft mt-2 overflow-x-auto rounded-xl p-3 text-xs leading-relaxed">{claudeConfig}</pre>
 
 				<h3 class="mt-6 text-sm font-semibold">Recherche-Prompt (Vorlage)</h3>
 				<p class="text-muted mt-1 text-sm">
 					MCP liefert die News nicht von allein – starte die Recherche mit diesem Prompt (oder
 					automatisiere ihn, z. B. als wiederkehrende Aufgabe):
 				</p>
-				<div class="mt-2 rounded-xl bg-stone-100 p-3 text-xs leading-relaxed select-all dark:bg-slate-950">
+				<div class="bg-soft mt-2 rounded-xl p-3 text-xs leading-relaxed select-all">
 					{researchPrompt}
 				</div>
 			</div>
+			{/if}
 		</div>
 	{/if}
 </div>

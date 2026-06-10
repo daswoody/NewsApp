@@ -1,5 +1,5 @@
 import { handleMcpPost } from '$lib/server/mcp';
-import { userFromBearer } from '$lib/server/mcp-auth';
+import { scopeFromBearer } from '$lib/server/mcp-auth';
 import type { RequestHandler } from './$types';
 
 function unauthorized(): Response {
@@ -10,9 +10,9 @@ function unauthorized(): Response {
 }
 
 export const POST: RequestHandler = async ({ request }) => {
-	const user = await userFromBearer(request);
-	if (!user) return unauthorized();
-	return handleMcpPost(user, request);
+	const scope = await scopeFromBearer(request);
+	if (!scope) return unauthorized();
+	return handleMcpPost(scope, request);
 };
 
 // Stateless server: no server-initiated SSE stream, sessions need no cleanup.

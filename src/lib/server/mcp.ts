@@ -1,12 +1,11 @@
 import {
 	getInterests,
-	getInterestsForAllUsers,
+	getInterestsForGroup,
 	getRecentArticles,
 	saveArticle,
 	SaveArticleError
 } from '$lib/server/articles';
-import { getAppSettings } from '$lib/server/app-settings';
-import type { User } from '$lib/server/db/schema';
+import type { TokenScope } from '$lib/server/mcp-auth';
 
 /**
  * Minimal, stateless MCP server (Streamable HTTP transport, JSON responses).
@@ -109,21 +108,15 @@ function toolText(value: unknown, isError = false) {
 	};
 }
 
-interface ToolScope {
-	userId: string;
-	/** central/family mode: an admin token acts for every account */
-	central: boolean;
-}
-
-async function callTool(scope: ToolScope, name: string, args: Record<string, unknown>) {
+async function callTool(scope: TokenScope, name: string, args: Record<string, unknown>) {
 	switch (name) {
 		case 'get_interests': {
-			if (scope.central) {
-				const usersInterests = await getInterestsForAllUsers();
+			if (scope.kind === 'group') {
+				const members = await getInterestsForGroup(scope.groupId);
 				return toolText({
-					mode: 'central',
+					mode: 'group',
 					note: 'Research news for EVERY user below. Each category id belongs to the user it is listed under; save_article assigns the article to that user automatically.',
-					users: usersInterests
+					users: members
 				});
 			}
 			const interests = await getInterests(scope.userId);
@@ -136,13 +129,11 @@ async function callTool(scope: ToolScope, name: string, args: Record<string, unk
 		}
 		case 'list_recent_articles': {
 			const days = Math.min(30, Math.max(1, Number(args.days) || 3));
-			return toolText({
-				articles: await getRecentArticles(scope.central ? null : scope.userId, days)
-			});
+			return toolText({ articles: await getRecentArticles(scope, days) });
 		}
 		case 'save_article': {
 			try {
-				const article = await saveArticle(scope.central ? null : scope.userId, {
+				const article = await saveArticle(scope, {
 					categoryId: String(args.category_id ?? ''),
 					topicId: args.topic_id ? String(args.topic_id) : null,
 					headline: String(args.headline ?? ''),
@@ -169,7 +160,7 @@ async function callTool(scope: ToolScope, name: string, args: Record<string, unk
 	}
 }
 
-async function handleMessage(scope: ToolScope, msg: JsonRpcMessage): Promise<object | null> {
+async function handleMessage(scope: TokenScope, msg: JsonRpcMessage): Promise<object | null> {
 	// Notifications (no id) just get acknowledged.
 	if (msg.id === undefined || msg.id === null) return null;
 
@@ -208,16 +199,13 @@ async function handleMessage(scope: ToolScope, msg: JsonRpcMessage): Promise<obj
 	}
 }
 
-export async function handleMcpPost(user: User, request: Request): Promise<Response> {
+export async function handleMcpPost(scope: TokenScope, request: Request): Promise<Response> {
 	let body: unknown;
 	try {
 		body = await request.json();
 	} catch {
 		return Response.json(rpcError(null, -32700, 'Parse error'), { status: 400 });
 	}
-
-	const settings = await getAppSettings();
-	const scope: ToolScope = { userId: user.id, central: settings.mcpGlobal && user.isAdmin };
 
 	const messages: JsonRpcMessage[] = Array.isArray(body) ? body : [body as JsonRpcMessage];
 	const responses: object[] = [];

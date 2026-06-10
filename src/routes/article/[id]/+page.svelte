@@ -81,7 +81,7 @@
 <div class="mx-auto min-h-dvh max-w-3xl pb-36">
 	<!-- hero image with fade-out and title overlay -->
 	<div class="relative">
-		<div class="relative aspect-[16/10] w-full overflow-hidden bg-stone-200 sm:aspect-[16/8] dark:bg-slate-900">
+		<div class="bg-soft relative aspect-[16/10] w-full overflow-hidden sm:aspect-[16/8]">
 			{#if data.article.imagePath}
 				<img
 					src={`/images/${data.article.imagePath}`}
@@ -91,13 +91,13 @@
 				/>
 			{:else}
 				<div
-					class="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 via-stone-200 to-teal-100 text-6xl dark:from-slate-800 dark:via-slate-900 dark:to-teal-950"
+					class="bg-soft flex h-full w-full items-center justify-center text-6xl"
 				>
 					📰
 				</div>
 			{/if}
 			<div
-				class="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-[#f6f5f1] via-[#f6f5f1]/60 to-transparent dark:from-slate-950 dark:via-slate-950/60"
+				class="hero-fade absolute inset-x-0 bottom-0 h-3/4"
 			></div>
 		</div>
 		<a href="/" aria-label="Zurück zur Übersicht" class="icon-btn absolute top-4 left-4 h-10 w-10 rounded-full">
@@ -133,7 +133,7 @@
 			{/if}
 		</div>
 		{#if form && 'topicCreated' in form && form.topicCreated}
-			<p class="mt-2 rounded-lg bg-teal-700/10 px-3 py-2 text-sm text-teal-800 dark:bg-teal-500/10 dark:text-teal-300">
+			<p class="mt-2 accent-soft rounded-lg px-3 py-2 text-sm">
 				Sub-Topic „{form.topicCreated}" angelegt – künftige Recherchen liefern mehr News dazu.
 			</p>
 		{/if}
@@ -153,11 +153,11 @@
 						href={source.url}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="card w-56 shrink-0 p-4 transition hover:shadow-md dark:hover:border-slate-600"
+						class="card w-56 shrink-0 p-4 transition hover:border-[var(--faint)]"
 					>
 						<p class="truncate text-sm font-semibold">{source.name}</p>
 						<p class="text-faint mt-1 truncate text-xs">{source.url}</p>
-						<p class="mt-3 text-xs font-medium text-teal-700 dark:text-teal-400">Quelle öffnen ↗</p>
+						<p class="text-accent mt-3 text-xs font-medium">Quelle öffnen ↗</p>
 					</a>
 				{/each}
 			</div>
@@ -173,7 +173,7 @@
 					{#if msg.role === 'user'}
 						<div class="flex justify-end">
 							<div
-								class="max-w-[85%] rounded-2xl rounded-br-md bg-teal-700/10 px-4 py-2.5 text-sm leading-relaxed text-teal-900 dark:bg-teal-500/20 dark:text-teal-100"
+								class="accent-soft max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed"
 							>
 								{msg.content}
 							</div>
@@ -207,7 +207,7 @@
 
 <!-- sticky question bar -->
 <div
-	class="fixed inset-x-0 bottom-0 bg-gradient-to-t from-[#f6f5f1] via-[#f6f5f1]/95 to-transparent pt-8 pb-[max(1rem,env(safe-area-inset-bottom))] dark:from-slate-950 dark:via-slate-950/95"
+	class="fixed inset-x-0 bottom-0 bottom-fade pt-8 pb-[max(1rem,env(safe-area-inset-bottom))]"
 >
 	<form onsubmit={ask} class="mx-auto flex max-w-3xl items-center gap-2 px-4">
 		<a href="/" aria-label="Zurück zur Übersicht" class="icon-btn h-11 w-11 shrink-0 rounded-full">
@@ -222,7 +222,7 @@
 				? 'Frage zur News stellen …'
 				: 'Verbinde zuerst eine KI in den Einstellungen'}
 			disabled={!data.aiConfigured || sending}
-			class="input h-11 min-w-0 flex-1 rounded-full px-4 shadow-sm disabled:opacity-60 dark:shadow-none"
+			class="input h-11 min-w-0 flex-1 rounded-full px-4 disabled:opacity-60"
 		/>
 		<button
 			type="submit"

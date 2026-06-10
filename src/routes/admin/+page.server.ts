@@ -1,10 +1,12 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { randomBytes } from 'node:crypto';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { articles, users } from '$lib/server/db/schema';
-import { hashPassword } from '$lib/server/auth';
+import { articles, groups, mcpTokens, users } from '$lib/server/db/schema';
+import { hashPassword, sha256 } from '$lib/server/auth';
 import { getAppSettings, updateAppSettings } from '$lib/server/app-settings';
 import { deleteImage } from '$lib/server/images';
+import { DEFAULT_DARK, DEFAULT_LIGHT, parseTheme, type ThemeTokens } from '$lib/theme';
 import type { Actions, PageServerLoad } from './$types';
 
 function requireAdmin(locals: App.Locals) {
@@ -13,33 +15,59 @@ function requireAdmin(locals: App.Locals) {
 	return locals.user;
 }
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	const admin = requireAdmin(locals);
 	const settings = await getAppSettings();
+
 	const allUsers = await db
 		.select({
 			id: users.id,
 			nickname: users.nickname,
 			email: users.email,
 			isAdmin: users.isAdmin,
+			groupId: users.groupId,
 			createdAt: users.createdAt
 		})
 		.from(users)
 		.orderBy(users.createdAt);
 
+	const allGroups = await db.select().from(groups).orderBy(groups.createdAt);
+
+	const groupTokens = await db
+		.select({
+			id: mcpTokens.id,
+			groupId: mcpTokens.groupId,
+			label: mcpTokens.label,
+			prefix: mcpTokens.prefix,
+			lastUsedAt: mcpTokens.lastUsedAt
+		})
+		.from(mcpTokens)
+		.where(isNotNull(mcpTokens.groupId))
+		.orderBy(mcpTokens.createdAt);
+
 	return {
 		selfId: admin.id,
 		users: allUsers,
+		groups: allGroups.map((g) => ({
+			id: g.id,
+			name: g.name,
+			aiBaseUrl: g.aiBaseUrl,
+			aiModel: g.aiModel,
+			hasApiKey: Boolean(g.aiApiKey),
+			members: allUsers.filter((u) => u.groupId === g.id),
+			tokens: groupTokens.filter((t) => t.groupId === g.id)
+		})),
 		allowRegistration: settings.allowRegistration,
-		aiGlobal: settings.aiGlobal,
-		mcpGlobal: settings.mcpGlobal,
-		globalAi: {
-			baseUrl: settings.aiBaseUrl,
-			model: settings.aiModel,
-			hasApiKey: Boolean(settings.aiApiKey)
-		}
+		themeLight: parseTheme(settings.themeLight, DEFAULT_LIGHT),
+		themeDark: parseTheme(settings.themeDark, DEFAULT_DARK),
+		themeCustomized: Boolean(settings.themeLight || settings.themeDark),
+		mcpUrl: `${url.origin}/mcp`
 	};
 };
+
+async function ownGroup(id: string) {
+	return (await db.select().from(groups).where(eq(groups.id, id)).limit(1))[0];
+}
 
 export const actions: Actions = {
 	createUser: async ({ request, locals }) => {
@@ -93,38 +121,134 @@ export const actions: Actions = {
 		return { ok: true };
 	},
 
-	toggleAiGlobal: async ({ locals }) => {
-		requireAdmin(locals);
-		const settings = await getAppSettings();
-		await updateAppSettings({ aiGlobal: !settings.aiGlobal });
-		return { ok: true };
-	},
+	// ---------- groups ----------
 
-	toggleMcpGlobal: async ({ locals }) => {
-		requireAdmin(locals);
-		const settings = await getAppSettings();
-		await updateAppSettings({ mcpGlobal: !settings.mcpGlobal });
-		return { ok: true };
-	},
-
-	saveGlobalAi: async ({ request, locals }) => {
+	createGroup: async ({ request, locals }) => {
 		requireAdmin(locals);
 		const form = await request.formData();
+		const name = String(form.get('name') ?? '').trim();
+		if (!name || name.length > 60) {
+			return fail(400, { error: 'Bitte einen Gruppennamen angeben (max. 60 Zeichen).' });
+		}
+		await db.insert(groups).values({ name });
+		return { ok: true };
+	},
+
+	deleteGroup: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const id = String(form.get('id') ?? '');
+		if (!(await ownGroup(id))) return fail(404, { error: 'Gruppe nicht gefunden.' });
+		// members fall back to self-managed settings, group tokens are removed
+		await db.delete(groups).where(eq(groups.id, id));
+		return { ok: true };
+	},
+
+	saveGroup: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const id = String(form.get('id') ?? '');
+		const group = await ownGroup(id);
+		if (!group) return fail(404, { error: 'Gruppe nicht gefunden.' });
+		const name = String(form.get('name') ?? '').trim();
 		const baseUrl = String(form.get('baseUrl') ?? '')
 			.trim()
 			.replace(/\/+$/, '');
 		const model = String(form.get('model') ?? '').trim();
 		const apiKey = String(form.get('apiKey') ?? '').trim();
+		if (!name || name.length > 60) {
+			return fail(400, { error: 'Bitte einen Gruppennamen angeben (max. 60 Zeichen).' });
+		}
 		if (baseUrl && !/^https?:\/\//.test(baseUrl)) {
 			return fail(400, { error: 'Die Base-URL muss mit http(s):// beginnen.' });
 		}
-		const settings = await getAppSettings();
-		await updateAppSettings({
-			aiBaseUrl: baseUrl,
-			aiModel: model,
-			// empty key field keeps the stored key
-			aiApiKey: apiKey || settings.aiApiKey
+		await db
+			.update(groups)
+			.set({
+				name,
+				aiBaseUrl: baseUrl,
+				aiModel: model,
+				// empty key field keeps the stored key
+				aiApiKey: apiKey || group.aiApiKey
+			})
+			.where(eq(groups.id, id));
+		return { ok: true, groupSaved: id };
+	},
+
+	setUserGroup: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const userId = String(form.get('userId') ?? '');
+		const groupId = String(form.get('groupId') ?? '');
+		const target = (await db.select().from(users).where(eq(users.id, userId)).limit(1))[0];
+		if (!target) return fail(404, { error: 'Nutzer nicht gefunden.' });
+		if (groupId && !(await ownGroup(groupId))) {
+			return fail(404, { error: 'Gruppe nicht gefunden.' });
+		}
+		await db
+			.update(users)
+			.set({ groupId: groupId || null })
+			.where(eq(users.id, userId));
+		return { ok: true };
+	},
+
+	createGroupToken: async ({ request, locals }) => {
+		const admin = requireAdmin(locals);
+		const form = await request.formData();
+		const groupId = String(form.get('groupId') ?? '');
+		const label = String(form.get('label') ?? '').trim() || 'Gruppen-Token';
+		if (!(await ownGroup(groupId))) return fail(404, { error: 'Gruppe nicht gefunden.' });
+		const token = `nws_${randomBytes(32).toString('base64url')}`;
+		await db.insert(mcpTokens).values({
+			userId: admin.id,
+			groupId,
+			label,
+			tokenHash: sha256(token),
+			prefix: token.slice(0, 9)
 		});
-		return { ok: true, aiSaved: true };
+		// shown exactly once; only the hash is stored
+		return { ok: true, newToken: token, newTokenLabel: label, newTokenGroup: groupId };
+	},
+
+	deleteGroupToken: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const id = String(form.get('id') ?? '');
+		await db.delete(mcpTokens).where(and(eq(mcpTokens.id, id), isNotNull(mcpTokens.groupId)));
+		return { ok: true };
+	},
+
+	// ---------- theme ----------
+
+	saveTheme: async ({ request, locals }) => {
+		requireAdmin(locals);
+		const form = await request.formData();
+		const mode = String(form.get('mode') ?? '');
+		if (mode !== 'light' && mode !== 'dark') return fail(400, { error: 'Ungültiger Modus.' });
+		const fallback = mode === 'light' ? DEFAULT_LIGHT : DEFAULT_DARK;
+		const tokens: ThemeTokens = {
+			bg: String(form.get('bg') ?? fallback.bg),
+			card: String(form.get('card') ?? fallback.card),
+			text: String(form.get('text') ?? fallback.text),
+			accent: String(form.get('accent') ?? fallback.accent),
+			border: String(form.get('border') ?? fallback.border),
+			cardBorder: form.get('cardBorder') === 'on',
+			radius: Number(form.get('radius') ?? fallback.radius),
+			font: form.get('font') === 'sans' ? 'sans' : 'serif'
+		};
+		// parseTheme validates and falls back invalid fields
+		const clean = parseTheme(JSON.stringify(tokens), fallback);
+		await updateAppSettings(
+			mode === 'light'
+				? { themeLight: JSON.stringify(clean) }
+				: { themeDark: JSON.stringify(clean) }
+		);
+		return { ok: true, themeSaved: mode };
+	},
+
+	resetTheme: async ({ locals }) => {
+		requireAdmin(locals);
+		await updateAppSettings({ themeLight: '', themeDark: '' });
+		return { ok: true };
 	}
 };

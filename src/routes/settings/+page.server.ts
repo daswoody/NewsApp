@@ -1,17 +1,17 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { randomBytes } from 'node:crypto';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import {
 	aiSettings,
 	articles,
 	categories,
+	groups,
 	mcpTokens,
 	topics,
 	users
 } from '$lib/server/db/schema';
 import { destroySession, hashPassword, sha256, verifyPassword } from '$lib/server/auth';
-import { getAppSettings } from '$lib/server/app-settings';
 import { deleteImage } from '$lib/server/images';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -47,18 +47,19 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			lastUsedAt: mcpTokens.lastUsedAt
 		})
 		.from(mcpTokens)
-		.where(eq(mcpTokens.userId, userId))
+		.where(and(eq(mcpTokens.userId, userId), isNull(mcpTokens.groupId)))
 		.orderBy(mcpTokens.createdAt);
 
-	const app = await getAppSettings();
+	const group = locals.user.groupId
+		? (await db.select().from(groups).where(eq(groups.id, locals.user.groupId)).limit(1))[0]
+		: undefined;
 
 	return {
 		nickname: locals.user.nickname,
 		email: locals.user.email,
 		isAdmin: locals.user.isAdmin,
 		deleteAfterDays: locals.user.deleteAfterDays,
-		aiGlobal: app.aiGlobal,
-		mcpGlobal: app.mcpGlobal,
+		groupName: group?.name ?? null,
 		categories: cats.map((c) => ({
 			id: c.id,
 			title: c.title,
@@ -296,6 +297,9 @@ export const actions: Actions = {
 
 	saveAi: async ({ request, locals }) => {
 		const userId = requireUser(locals);
+		if (locals.user!.groupId) {
+			return fail(403, { error: 'Die KI-Verbindung wird von deiner Gruppe verwaltet.' });
+		}
 		const form = await request.formData();
 		const baseUrl = String(form.get('baseUrl') ?? '').trim().replace(/\/+$/, '');
 		const model = String(form.get('model') ?? '').trim();
@@ -320,6 +324,9 @@ export const actions: Actions = {
 
 	createToken: async ({ request, locals }) => {
 		const userId = requireUser(locals);
+		if (locals.user!.groupId) {
+			return fail(403, { error: 'MCP-Tokens werden von deiner Gruppe verwaltet.' });
+		}
 		const form = await request.formData();
 		const label = String(form.get('label') ?? '').trim() || 'MCP Client';
 		const token = `nws_${randomBytes(32).toString('base64url')}`;

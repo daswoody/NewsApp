@@ -1,7 +1,14 @@
 import { eq } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
-import { aiSettings, appSettings, users, type AppSettings } from '$lib/server/db/schema';
+import {
+	aiSettings,
+	appSettings,
+	groups,
+	users,
+	type AppSettings,
+	type User
+} from '$lib/server/db/schema';
 
 /** Loads the single settings row, creating it on first access. */
 export async function getAppSettings(): Promise<AppSettings> {
@@ -27,26 +34,30 @@ export async function registrationAllowed(): Promise<boolean> {
 }
 
 /**
- * AI connection used for article chat: the per-user config, or the
- * admin-managed global one when the admin switched AI settings to global.
+ * AI connection used for article chat: group members use the group's
+ * connection (managed by the admin), everyone else their own settings.
  */
 export async function resolveAiSettings(
-	userId: string
-): Promise<{ baseUrl: string; apiKey: string; model: string; global: boolean }> {
-	const settings = await getAppSettings();
-	if (settings.aiGlobal) {
-		return {
-			baseUrl: settings.aiBaseUrl,
-			apiKey: settings.aiApiKey,
-			model: settings.aiModel,
-			global: true
-		};
+	user: Pick<User, 'id' | 'groupId'>
+): Promise<{ baseUrl: string; apiKey: string; model: string; groupName: string | null }> {
+	if (user.groupId) {
+		const group = (await db.select().from(groups).where(eq(groups.id, user.groupId)).limit(1))[0];
+		if (group) {
+			return {
+				baseUrl: group.aiBaseUrl,
+				apiKey: group.aiApiKey,
+				model: group.aiModel,
+				groupName: group.name
+			};
+		}
 	}
-	const own = (await db.select().from(aiSettings).where(eq(aiSettings.userId, userId)).limit(1))[0];
+	const own = (
+		await db.select().from(aiSettings).where(eq(aiSettings.userId, user.id)).limit(1)
+	)[0];
 	return {
 		baseUrl: own?.baseUrl ?? '',
 		apiKey: own?.apiKey ?? '',
 		model: own?.model ?? '',
-		global: false
+		groupName: null
 	};
 }

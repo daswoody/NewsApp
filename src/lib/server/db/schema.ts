@@ -7,6 +7,16 @@ import {
 	uuid
 } from 'drizzle-orm/pg-core';
 
+// a group shares one AI connection and group MCP tokens across its members
+export const groups = pgTable('groups', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	name: text('name').notNull(),
+	aiBaseUrl: text('ai_base_url').notNull().default(''),
+	aiApiKey: text('ai_api_key').notNull().default(''),
+	aiModel: text('ai_model').notNull().default(''),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+});
+
 export const users = pgTable('users', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	nickname: text('nickname').notNull(),
@@ -14,6 +24,7 @@ export const users = pgTable('users', {
 	passwordHash: text('password_hash').notNull(),
 	deleteAfterDays: integer('delete_after_days').notNull().default(30),
 	isAdmin: boolean('is_admin').notNull().default(false),
+	groupId: uuid('group_id').references(() => groups.id, { onDelete: 'set null' }),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });
 
@@ -98,6 +109,8 @@ export const mcpTokens = pgTable('mcp_tokens', {
 	userId: uuid('user_id')
 		.notNull()
 		.references(() => users.id, { onDelete: 'cascade' }),
+	// set on group tokens: the token then researches for all group members
+	groupId: uuid('group_id').references(() => groups.id, { onDelete: 'cascade' }),
 	tokenHash: text('token_hash').notNull().unique(),
 	label: text('label').notNull().default(''),
 	prefix: text('prefix').notNull().default(''),
@@ -109,11 +122,9 @@ export const mcpTokens = pgTable('mcp_tokens', {
 export const appSettings = pgTable('app_settings', {
 	id: integer('id').primaryKey().default(1),
 	allowRegistration: boolean('allow_registration').notNull().default(true),
-	aiGlobal: boolean('ai_global').notNull().default(false),
-	mcpGlobal: boolean('mcp_global').notNull().default(false),
-	aiBaseUrl: text('ai_base_url').notNull().default(''),
-	aiApiKey: text('ai_api_key').notNull().default(''),
-	aiModel: text('ai_model').notNull().default('')
+	// custom design tokens as JSON, empty = built-in defaults
+	themeLight: text('theme_light').notNull().default(''),
+	themeDark: text('theme_dark').notNull().default('')
 });
 
 export type User = typeof users.$inferSelect;
@@ -125,3 +136,4 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 export type AiSettings = typeof aiSettings.$inferSelect;
 export type McpToken = typeof mcpTokens.$inferSelect;
 export type AppSettings = typeof appSettings.$inferSelect;
+export type Group = typeof groups.$inferSelect;

@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const question = String(body.question ?? '').trim();
 	if (!question || question.length > 4000) error(400, 'Ungültige Frage');
 
-	const ai = await resolveAiSettings(userId);
+	const ai = await resolveAiSettings(locals.user);
 	if (!ai.baseUrl || !ai.model) {
 		return json(
 			{ error: 'Keine KI verbunden. Hinterlege Base-URL und Modell in den Einstellungen.' },

@@ -12,8 +12,8 @@
 	const chipBase =
 		'shrink-0 rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition';
 	const chipInactive =
-		'bg-white text-stone-600 shadow-sm hover:text-stone-900 dark:bg-slate-900 dark:text-slate-300 dark:shadow-none dark:border dark:border-slate-700 dark:hover:border-slate-500';
-	const chipActive = 'bg-stone-900 text-white dark:bg-white dark:text-slate-900';
+		'border border-token bg-[var(--card)] text-muted hover:text-[var(--text)]';
+	const chipActive = 'bg-[var(--text)] text-[var(--bg)]';
 </script>
 
 <svelte:head><title>News</title></svelte:head>
@@ -21,7 +21,7 @@
 <div class="mx-auto min-h-dvh max-w-7xl px-4 pb-36 sm:pb-16">
 	<header class="flex items-center justify-between py-5">
 		<div class="flex items-center gap-3">
-			<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-700/10 text-xl dark:bg-teal-500/15">📰</div>
+			<div class="flex h-10 w-10 items-center justify-center rounded-xl accent-soft text-xl">📰</div>
 			<div>
 				<p class="text-faint text-xs">Deine News</p>
 				<h1 class="font-display text-lg leading-tight font-bold">{data.nickname}</h1>
@@ -44,7 +44,7 @@
 
 	<!-- chip bar: sticky below the top on desktop, thumb-friendly fixed bottom bar on mobile -->
 	<div
-		class="fixed inset-x-0 bottom-0 z-30 border-t border-stone-200 bg-[#f6f5f1]/95 px-4 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:sticky sm:top-0 sm:bottom-auto sm:-mx-4 sm:border-t-0 sm:border-b sm:py-3 dark:border-slate-800 dark:bg-slate-950/95"
+		class="bar fixed inset-x-0 bottom-0 z-30 border-t px-4 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:sticky sm:top-0 sm:bottom-auto sm:-mx-4 sm:border-t-0 sm:border-b sm:py-3"
 	>
 		<nav class="no-scrollbar flex gap-2 overflow-x-auto" aria-label="Kategorien">
 			<a href="/" class="{chipBase} {noFilter ? chipActive : chipInactive}">Alle</a>
@@ -100,10 +100,10 @@
 				{#if data.savedOnly}
 					Du hast noch keine Artikel gemerkt. Tippe auf den Stern einer News-Karte, um sie hier zu sammeln.
 				{:else if data.categories.length === 0}
-					Lege zuerst in den <a href="/settings" class="text-teal-700 underline dark:text-teal-400">Einstellungen</a>
+					Lege zuerst in den <a href="/settings" class="text-accent underline">Einstellungen</a>
 					deine Interessen-Kategorien an und verbinde dann deine KI über den MCP-Server.
 				{:else}
-					Verbinde deine KI über den MCP-Server (siehe <a href="/settings?tab=ki" class="text-teal-700 underline dark:text-teal-400">Einstellungen</a>)
+					Verbinde deine KI über den MCP-Server (siehe <a href="/settings?tab=ki" class="text-accent underline">Einstellungen</a>)
 					und lass sie News zu deinen Interessen recherchieren.
 				{/if}
 			</p>
@@ -113,7 +113,7 @@
 			<section class="mt-8">
 				<h2 class="text-muted mb-4 flex items-center gap-3 text-sm font-semibold tracking-wide uppercase">
 					{group.label}
-					<span class="h-px flex-1 bg-stone-200 dark:bg-slate-800"></span>
+					<span class="h-px flex-1 bg-[var(--border)]"></span>
 				</h2>
 				<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 					{#each group.items as article (article.id)}
