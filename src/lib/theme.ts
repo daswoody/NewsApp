@@ -39,17 +39,33 @@ export const DEFAULT_DARK: ThemeTokens = {
 
 /* ---------- fonts (self-hosted Google Fonts via @fontsource) ---------- */
 
+export type FontStyle = 'regular' | 'bold' | 'italic';
+
 export interface Typography {
 	headline: string; // card headlines + article title
+	headlineStyle: FontStyle;
 	articleHeadings: string; // h2/h3 inside articles ('' = same as headline)
+	articleHeadingsStyle: FontStyle;
 	body: string; // article body text
 }
 
 export const DEFAULT_TYPOGRAPHY: Typography = {
 	headline: 'system-serif',
+	headlineStyle: 'bold',
 	articleHeadings: '',
+	articleHeadingsStyle: 'bold',
 	body: 'system-sans'
 };
+
+export const FONT_STYLE_OPTIONS: { id: FontStyle; label: string }[] = [
+	{ id: 'bold', label: 'Fett' },
+	{ id: 'regular', label: 'Regular' },
+	{ id: 'italic', label: 'Kursiv' }
+];
+
+function isFontStyle(value: string): value is FontStyle {
+	return value === 'regular' || value === 'bold' || value === 'italic';
+}
 
 const FONT_FAMILIES: Record<string, string> = {
 	'system-serif': "Georgia, 'Times New Roman', ui-serif, serif",
@@ -89,10 +105,16 @@ function fontFamily(id: string, fallbackId: string): string {
 	return FONT_FAMILIES[id] ?? FONT_FAMILIES[fallbackId];
 }
 
-export function parseTypography(raw: Partial<Typography>): Typography {
+export function parseTypography(raw: Partial<Record<keyof Typography, string>>): Typography {
 	return {
 		headline: isFontId(raw.headline ?? '') ? raw.headline! : DEFAULT_TYPOGRAPHY.headline,
+		headlineStyle: isFontStyle(raw.headlineStyle ?? '')
+			? (raw.headlineStyle as FontStyle)
+			: DEFAULT_TYPOGRAPHY.headlineStyle,
 		articleHeadings: isFontId(raw.articleHeadings ?? '') ? raw.articleHeadings! : '',
+		articleHeadingsStyle: isFontStyle(raw.articleHeadingsStyle ?? '')
+			? (raw.articleHeadingsStyle as FontStyle)
+			: DEFAULT_TYPOGRAPHY.articleHeadingsStyle,
 		body: isFontId(raw.body ?? '') ? raw.body! : DEFAULT_TYPOGRAPHY.body
 	};
 }
@@ -146,9 +168,17 @@ function tokenBlock(t: ThemeTokens): string {
 }
 
 export function buildThemeCss(light: ThemeTokens, dark: ThemeTokens, typo: Typography): string {
+	const styleVars = (style: FontStyle) =>
+		style === 'bold' ? ['700', 'normal'] : style === 'italic' ? ['400', 'italic'] : ['400', 'normal'];
+	const [headlineWeight, headlineStyle] = styleVars(typo.headlineStyle);
+	const [articleWeight, articleStyle] = styleVars(typo.articleHeadingsStyle);
 	const fonts = [
 		`--font-display: ${fontFamily(typo.headline, 'system-serif')};`,
+		`--font-display-weight: ${headlineWeight};`,
+		`--font-display-style: ${headlineStyle};`,
 		`--font-article-headings: ${fontFamily(typo.articleHeadings, typo.headline)};`,
+		`--font-article-headings-weight: ${articleWeight};`,
+		`--font-article-headings-style: ${articleStyle};`,
 		`--font-body: ${fontFamily(typo.body, 'system-sans')};`
 	].join(' ');
 	// doubled :root selectors out-rank the defaults in app.css regardless of

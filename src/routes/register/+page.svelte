@@ -11,7 +11,7 @@
 	<div class="w-full max-w-sm">
 		<div class="mb-8 text-center">
 			<div class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl accent-soft text-3xl">📰</div>
-			<h1 class="font-display text-2xl font-bold">Account erstellen</h1>
+			<h1 class="font-display text-2xl">Account erstellen</h1>
 			<p class="text-muted mt-1 text-sm">Deine persönlichen, KI-recherchierten News.</p>
 		</div>
 

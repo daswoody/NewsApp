@@ -24,7 +24,7 @@
 			<div class="flex h-10 w-10 items-center justify-center rounded-xl accent-soft text-xl">📰</div>
 			<div>
 				<p class="text-faint text-xs">Deine News</p>
-				<h1 class="font-display text-lg leading-tight font-bold">{data.nickname}</h1>
+				<h1 class="font-display text-lg leading-tight">{data.nickname}</h1>
 			</div>
 		</div>
 		<div class="flex items-center gap-2">
@@ -95,7 +95,7 @@
 	{#if groups.length === 0}
 		<div class="mt-20 text-center">
 			<p class="text-5xl">🗞️</p>
-			<h2 class="font-display mt-4 text-xl font-bold">Noch keine News</h2>
+			<h2 class="font-display mt-4 text-xl">Noch keine News</h2>
 			<p class="text-muted mx-auto mt-2 max-w-md text-sm leading-relaxed">
 				{#if data.savedOnly}
 					Du hast noch keine Artikel gemerkt. Tippe auf den Stern einer News-Karte, um sie hier zu sammeln.

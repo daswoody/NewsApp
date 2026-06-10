@@ -47,7 +47,7 @@
 			<span class="inline-block rounded-md px-2.5 py-1 text-xs font-semibold {chipColor(article.categoryTitle)}">
 				{tag}
 			</span>
-			<h3 class="font-display text-lg leading-snug font-bold">{article.headline}</h3>
+			<h3 class="font-display text-lg leading-snug">{article.headline}</h3>
 			{#if showSummary}
 				<p class="text-muted line-clamp-3 text-sm leading-relaxed">{article.summary}</p>
 			{/if}

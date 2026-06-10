@@ -70,7 +70,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		themeCustomized: Boolean(settings.themeLight || settings.themeDark),
 		typography: parseTypography({
 			headline: settings.fontHeadline,
+			headlineStyle: settings.fontHeadlineStyle,
 			articleHeadings: settings.fontArticleHeadings,
+			articleHeadingsStyle: settings.fontArticleHeadingsStyle,
 			body: settings.fontBody
 		}),
 		showCardSummary: settings.showCardSummary,
@@ -265,7 +267,9 @@ export const actions: Actions = {
 			themeLight: '',
 			themeDark: '',
 			fontHeadline: '',
+			fontHeadlineStyle: '',
 			fontArticleHeadings: '',
+			fontArticleHeadingsStyle: '',
 			fontBody: ''
 		});
 		return { ok: true };
@@ -280,9 +284,18 @@ export const actions: Actions = {
 		for (const id of [fontHeadline, fontArticleHeadings, fontBody]) {
 			if (id !== '' && !isFontId(id)) return fail(400, { error: 'Unbekannte Schriftart.' });
 		}
+		const fontHeadlineStyle = String(form.get('headlineStyle') ?? '');
+		const fontArticleHeadingsStyle = String(form.get('articleHeadingsStyle') ?? '');
+		for (const style of [fontHeadlineStyle, fontArticleHeadingsStyle]) {
+			if (style !== '' && !['regular', 'bold', 'italic'].includes(style)) {
+				return fail(400, { error: 'Unbekannter Schriftstil.' });
+			}
+		}
 		await updateAppSettings({
 			fontHeadline,
+			fontHeadlineStyle,
 			fontArticleHeadings,
+			fontArticleHeadingsStyle,
 			fontBody,
 			showCardSummary: form.get('showCardSummary') === 'on'
 		});

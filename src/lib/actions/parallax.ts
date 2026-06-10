@@ -15,7 +15,8 @@ export function parallax(node: HTMLElement, strength = 14) {
 		const rect = node.getBoundingClientRect();
 		if (rect.bottom < -100 || rect.top > window.innerHeight + 100) return;
 		const progress = (rect.top + rect.height / 2 - window.innerHeight / 2) / window.innerHeight;
-		const y = Math.max(-1, Math.min(1, progress)) * strength;
+		// negative factor: the image drifts against the scroll direction
+		const y = Math.max(-1, Math.min(1, progress)) * -strength;
 		node.style.transform = `scale(1.12) translate3d(0, ${y}px, 0)`;
 	};
 

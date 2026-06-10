@@ -85,44 +85,36 @@
 
 <svelte:head><title>{data.article.headline} – News</title></svelte:head>
 
-<div class="mx-auto min-h-dvh max-w-3xl pb-36">
-	<!-- hero image with fade-out and title overlay -->
-	<div class="relative">
-		<div class="bg-soft relative aspect-[16/10] w-full overflow-hidden sm:aspect-[16/8]">
+<div class="min-h-dvh pb-36">
+	<!-- hero image: full-bleed with bottom-rounded corners on mobile, inset
+	     with a 16px top gap and a wider footprint than the content on desktop -->
+	<div class="relative mx-auto max-w-4xl sm:px-4 sm:pt-4">
+		<div
+			class="bg-soft relative aspect-[16/10] w-full overflow-hidden rounded-b-[calc(var(--radius)*1.25)] sm:aspect-[16/8] sm:rounded-[calc(var(--radius)*1.25)]"
+		>
 			{#if data.article.imagePath}
-				<img
-					src={`/images/${data.article.imagePath}`}
-					alt=""
-					use:parallax={20}
-					class="h-full w-full object-cover"
-				/>
-			{:else}
-				<div
-					class="bg-soft flex h-full w-full items-center justify-center text-6xl"
-				>
-					📰
+				<div use:parallax={20} class="h-full w-full">
+					<img src={`/images/${data.article.imagePath}`} alt="" class="h-full w-full object-cover" />
 				</div>
+			{:else}
+				<div class="bg-soft flex h-full w-full items-center justify-center text-6xl">📰</div>
 			{/if}
-			<div
-				class="hero-fade absolute inset-x-0 bottom-0 h-3/4"
-			></div>
 		</div>
 		<!-- desktop back button; on mobile the one next to the chat input is used -->
-		<a href="/" aria-label="Zurück zur Übersicht" class="icon-btn absolute top-4 left-4 hidden h-10 w-10 rounded-full sm:flex">
+		<a href="/" aria-label="Zurück zur Übersicht" class="icon-btn absolute top-8 left-8 hidden h-10 w-10 rounded-full sm:flex">
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
 			</svg>
 		</a>
-		<h1
-			class="font-display absolute right-4 bottom-2 left-4 text-2xl leading-tight font-extrabold sm:text-3xl"
-		>
-			{data.article.headline}
-		</h1>
 	</div>
 
-	<div class="px-4">
+	<div class="mx-auto max-w-3xl px-4">
+		<h1 class="font-display mt-6 text-2xl leading-tight sm:text-3xl">
+			{data.article.headline}
+		</h1>
+
 		<!-- meta row -->
-		<div class="text-muted mt-4 flex flex-wrap items-center gap-2 text-sm">
+		<div class="text-muted mt-3 flex flex-wrap items-center gap-2 text-sm">
 			<span>{shortDate(data.article.publishedAt)}</span>
 			<span class="text-faint">•</span>
 			<span class="rounded-md px-2.5 py-1 text-xs font-semibold {chipColor(data.categoryTitle)}">{tag}</span>

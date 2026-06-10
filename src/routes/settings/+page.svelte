@@ -57,7 +57,7 @@
 				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
 			</svg>
 		</a>
-		<h1 class="font-display text-lg font-bold">Einstellungen</h1>
+		<h1 class="font-display text-lg">Einstellungen</h1>
 		<span class="flex-1"></span>
 		<ThemeToggle />
 		{#if data.isAdmin}
