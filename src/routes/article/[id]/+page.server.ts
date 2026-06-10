@@ -1,14 +1,8 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { and, asc, eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import {
-	aiSettings,
-	articles,
-	categories,
-	chatMessages,
-	sources,
-	topics
-} from '$lib/server/db/schema';
+import { articles, categories, chatMessages, sources, topics } from '$lib/server/db/schema';
+import { resolveAiSettings } from '$lib/server/app-settings';
 import { renderMarkdown } from '$lib/markdown';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -40,9 +34,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		.from(chatMessages)
 		.where(eq(chatMessages.articleId, article.id))
 		.orderBy(asc(chatMessages.createdAt));
-	const ai = (
-		await db.select().from(aiSettings).where(eq(aiSettings.userId, locals.user.id)).limit(1)
-	)[0];
+	const ai = await resolveAiSettings(locals.user.id);
 
 	return {
 		article: {
@@ -59,7 +51,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		topicTitle: topic?.title ?? null,
 		sources: sourceRows.map((s) => ({ id: s.id, name: s.name, url: s.url })),
 		messages: messages.map((m) => ({ id: m.id, role: m.role, content: m.content })),
-		aiConfigured: Boolean(ai?.baseUrl && ai?.model)
+		aiConfigured: Boolean(ai.baseUrl && ai.model)
 	};
 };
 

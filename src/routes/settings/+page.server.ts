@@ -10,7 +10,8 @@ import {
 	topics,
 	users
 } from '$lib/server/db/schema';
-import { sha256 } from '$lib/server/auth';
+import { destroySession, hashPassword, sha256, verifyPassword } from '$lib/server/auth';
+import { getAppSettings } from '$lib/server/app-settings';
 import { deleteImage } from '$lib/server/images';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -34,7 +35,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 							cats.map((c) => c.id)
 						)
 					)
-					.orderBy(topics.createdAt)
+					.orderBy(topics.position, topics.createdAt)
 			: [];
 	const ai = (await db.select().from(aiSettings).where(eq(aiSettings.userId, userId)).limit(1))[0];
 	const tokens = await db
@@ -49,9 +50,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		.where(eq(mcpTokens.userId, userId))
 		.orderBy(mcpTokens.createdAt);
 
+	const app = await getAppSettings();
+
 	return {
 		nickname: locals.user.nickname,
+		email: locals.user.email,
+		isAdmin: locals.user.isAdmin,
 		deleteAfterDays: locals.user.deleteAfterDays,
+		aiGlobal: app.aiGlobal,
+		mcpGlobal: app.mcpGlobal,
 		categories: cats.map((c) => ({
 			id: c.id,
 			title: c.title,
@@ -174,6 +181,106 @@ export const actions: Actions = {
 		if (!(await ownTopic(userId, id))) return fail(404, { error: 'Topic nicht gefunden.' });
 		await db.delete(topics).where(eq(topics.id, id));
 		return { ok: true };
+	},
+
+	moveCategory: async ({ request, locals }) => {
+		const userId = requireUser(locals);
+		const form = await request.formData();
+		const id = String(form.get('id') ?? '');
+		const dir = String(form.get('dir') ?? '') === 'up' ? -1 : 1;
+		const ordered = await db
+			.select({ id: categories.id })
+			.from(categories)
+			.where(eq(categories.userId, userId))
+			.orderBy(categories.position, categories.createdAt);
+		const index = ordered.findIndex((c) => c.id === id);
+		if (index === -1) return fail(404, { error: 'Kategorie nicht gefunden.' });
+		const target = index + dir;
+		if (target < 0 || target >= ordered.length) return { ok: true };
+		[ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+		for (let i = 0; i < ordered.length; i++) {
+			await db.update(categories).set({ position: i }).where(eq(categories.id, ordered[i].id));
+		}
+		return { ok: true };
+	},
+
+	moveTopic: async ({ request, locals }) => {
+		const userId = requireUser(locals);
+		const form = await request.formData();
+		const id = String(form.get('id') ?? '');
+		const dir = String(form.get('dir') ?? '') === 'up' ? -1 : 1;
+		const topic = await ownTopic(userId, id);
+		if (!topic) return fail(404, { error: 'Topic nicht gefunden.' });
+		const ordered = await db
+			.select({ id: topics.id })
+			.from(topics)
+			.where(eq(topics.categoryId, topic.categoryId))
+			.orderBy(topics.position, topics.createdAt);
+		const index = ordered.findIndex((t) => t.id === id);
+		const target = index + dir;
+		if (target < 0 || target >= ordered.length) return { ok: true };
+		[ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+		for (let i = 0; i < ordered.length; i++) {
+			await db.update(topics).set({ position: i }).where(eq(topics.id, ordered[i].id));
+		}
+		return { ok: true };
+	},
+
+	updateProfile: async ({ request, locals }) => {
+		const userId = requireUser(locals);
+		const form = await request.formData();
+		const nickname = String(form.get('nickname') ?? '').trim();
+		if (!nickname || nickname.length > 60) {
+			return fail(400, { error: 'Bitte einen Spitznamen angeben (max. 60 Zeichen).' });
+		}
+		await db.update(users).set({ nickname }).where(eq(users.id, userId));
+		return { ok: true, profileSaved: true };
+	},
+
+	changePassword: async ({ request, locals }) => {
+		const userId = requireUser(locals);
+		const form = await request.formData();
+		const current = String(form.get('current') ?? '');
+		const next = String(form.get('next') ?? '');
+		if (next.length < 8) {
+			return fail(400, { error: 'Das neue Passwort muss mindestens 8 Zeichen lang sein.' });
+		}
+		const user = (await db.select().from(users).where(eq(users.id, userId)).limit(1))[0];
+		if (!user || !(await verifyPassword(current, user.passwordHash))) {
+			return fail(400, { error: 'Das aktuelle Passwort ist falsch.' });
+		}
+		await db
+			.update(users)
+			.set({ passwordHash: await hashPassword(next) })
+			.where(eq(users.id, userId));
+		return { ok: true, passwordSaved: true };
+	},
+
+	deleteAccount: async ({ request, locals, cookies }) => {
+		const userId = requireUser(locals);
+		const form = await request.formData();
+		const password = String(form.get('password') ?? '');
+		const user = (await db.select().from(users).where(eq(users.id, userId)).limit(1))[0];
+		if (!user || !(await verifyPassword(password, user.passwordHash))) {
+			return fail(400, { error: 'Das Passwort ist falsch – Account wurde nicht gelöscht.' });
+		}
+		if (user.isAdmin) {
+			const admins = await db.$count(users, eq(users.isAdmin, true));
+			const total = await db.$count(users);
+			if (admins === 1 && total > 1) {
+				return fail(400, {
+					error: 'Du bist der einzige Admin. Lösche zuerst die anderen Accounts oder ernenne im Admin-Panel keinen Ersatz – der letzte Admin kann nicht vor den übrigen Nutzern gehen.'
+				});
+			}
+		}
+		const imageRows = await db
+			.select({ imagePath: articles.imagePath })
+			.from(articles)
+			.where(eq(articles.userId, userId));
+		await db.delete(users).where(eq(users.id, userId));
+		for (const row of imageRows) await deleteImage(row.imagePath);
+		await destroySession(cookies, locals.sessionId);
+		redirect(303, '/login');
 	},
 
 	setRetention: async ({ request, locals }) => {

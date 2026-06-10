@@ -7,16 +7,31 @@ Unter jedem Artikel kannst du einer angebundenen KI (OpenAI-kompatible API) Rüc
 
 ## Features
 
-- Registrierung/Login (Registrierung per `ALLOW_REGISTRATION=false` abschaltbar)
-- Kategorien + Hot Topics mit Beschreibungstexten als Recherche-Auftrag für die KI
-- News-Startseite: Kategorie-Chips („Alle", „★ Gemerkt", Kategorien, zweite Zeile Hot Topics),
+- Registrierung/Login; der erste Account wird automatisch Admin
+- Admin-Panel: Nutzer anlegen/löschen, Registrierung an-/abschalten, KI-Verbindung zentral
+  oder pro Nutzer, MCP-Familienmodus
+- Konto-Einstellungen: Spitzname/Passwort ändern, Account löschen, Löschintervall
+- Kategorien + Hot Topics mit Beschreibungstexten als Recherche-Auftrag für die KI,
+  per Pfeiltasten sortierbar (bestimmt die Chip-Reihenfolge)
+- News-Startseite: Kategorie-Chips („Alle", „★ Gemerkt", Kategorien, zweite Zeile Hot Topics) –
+  sticky am oberen Rand, auf Mobile als Daumen-freundliche Leiste unten fixiert;
   Karten im responsiven Grid, nach Tagen gruppiert (Heute/Gestern/Datum)
+- Editorial-Design mit Dark/Light Mode (Umschalter im Header) und dezentem
+  Parallax-Effekt auf Bildern
 - Artikelansicht: Titelbild mit Fade-out, Markdown-Volltext, YouTube-Embeds,
   Quellen-Karten, „Als Sub-Topic festlegen", Merken-Stern
 - Artikel-Chat mit gespeicherter Q&A-Historie (OpenAI-kompatibel: Claude, OpenAI, Ollama, LM Studio)
 - Automatisches Löschen nach einstellbarem Intervall (gemerkte Artikel ausgenommen,
   hartes Limit 12 Monate), Bilder werden lokal gecacht und mitgelöscht
 - MCP-Server (Streamable HTTP) + REST-API mit Bearer-Tokens
+
+### MCP-Familienmodus
+
+Im Admin-Panel umschaltbar: Ist er aktiv, recherchieren **Admin-Tokens für alle Accounts** –
+`get_interests` liefert die Interessen jedes Nutzers (pro Nutzer gruppiert) und `save_article`
+ordnet jeden Artikel über die Kategorie-ID automatisch dem richtigen Nutzer zu. Ideal, wenn eine
+Person das Setup für die ganze Familie pflegt. Ausgeschaltet wirkt jeder Token nur für den
+eigenen Account (z. B. wenn Freunde ihre eigene KI anbinden).
 
 ## Installation auf dem Server
 

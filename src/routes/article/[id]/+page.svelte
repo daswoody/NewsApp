@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import StarButton from '$lib/components/StarButton.svelte';
+	import { parallax } from '$lib/actions/parallax';
+	import { chipColor } from '$lib/chip-colors';
 	import { shortDate } from '$lib/dates';
 	import { renderMarkdown } from '$lib/markdown';
 	import type { ActionData, PageData } from './$types';
@@ -79,52 +81,51 @@
 <div class="mx-auto min-h-dvh max-w-3xl pb-36">
 	<!-- hero image with fade-out and title overlay -->
 	<div class="relative">
-		<div class="relative aspect-[16/10] w-full overflow-hidden bg-slate-900 sm:aspect-[16/8]">
+		<div class="relative aspect-[16/10] w-full overflow-hidden bg-stone-200 sm:aspect-[16/8] dark:bg-slate-900">
 			{#if data.article.imagePath}
 				<img
 					src={`/images/${data.article.imagePath}`}
 					alt=""
+					use:parallax={20}
 					class="h-full w-full object-cover"
 				/>
 			{:else}
-				<div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 via-slate-900 to-teal-950 text-6xl">
+				<div
+					class="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 via-stone-200 to-teal-100 text-6xl dark:from-slate-800 dark:via-slate-900 dark:to-teal-950"
+				>
 					📰
 				</div>
 			{/if}
-			<div class="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
+			<div
+				class="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-[#f6f5f1] via-[#f6f5f1]/60 to-transparent dark:from-slate-950 dark:via-slate-950/60"
+			></div>
 		</div>
-		<a
-			href="/"
-			aria-label="Zurück zur Übersicht"
-			class="absolute top-4 left-4 flex h-10 w-10 items-center justify-center rounded-full bg-slate-950/70 text-slate-200 backdrop-blur transition hover:bg-slate-800"
-		>
+		<a href="/" aria-label="Zurück zur Übersicht" class="icon-btn absolute top-4 left-4 h-10 w-10 rounded-full">
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
 			</svg>
 		</a>
-		<h1 class="absolute right-4 bottom-4 left-4 text-2xl leading-tight font-extrabold text-white drop-shadow sm:text-3xl">
+		<h1
+			class="font-display absolute right-4 bottom-2 left-4 text-2xl leading-tight font-extrabold sm:text-3xl"
+		>
 			{data.article.headline}
 		</h1>
 	</div>
 
 	<div class="px-4">
 		<!-- meta row -->
-		<div class="mt-4 flex flex-wrap items-center gap-2 text-sm text-slate-400">
+		<div class="text-muted mt-4 flex flex-wrap items-center gap-2 text-sm">
 			<span>{shortDate(data.article.publishedAt)}</span>
-			<span class="text-slate-700">•</span>
-			<span class="rounded-full bg-teal-500/15 px-2.5 py-0.5 text-xs font-medium text-teal-300">{tag}</span>
+			<span class="text-faint">•</span>
+			<span class="rounded-md px-2.5 py-1 text-xs font-semibold {chipColor(data.categoryTitle)}">{tag}</span>
 			<span class="flex-1"></span>
-			<StarButton
-				articleId={data.article.id}
-				saved={data.article.saved}
-				action="?/toggleSave"
-			/>
+			<StarButton articleId={data.article.id} saved={data.article.saved} action="?/toggleSave" />
 			{#if !data.article.hasTopic}
 				<form method="POST" action="?/makeTopic" use:enhance>
 					<button
 						type="submit"
 						title="Erzeugt ein Hot Topic zu diesem Thema, damit künftig mehr News dazu erscheinen"
-						class="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-teal-400 hover:text-teal-300"
+						class="btn-ghost rounded-full px-3 py-1.5 text-xs font-medium"
 					>
 						+ Als Sub-Topic festlegen
 					</button>
@@ -132,31 +133,31 @@
 			{/if}
 		</div>
 		{#if form && 'topicCreated' in form && form.topicCreated}
-			<p class="mt-2 rounded-lg bg-teal-500/10 px-3 py-2 text-sm text-teal-300">
+			<p class="mt-2 rounded-lg bg-teal-700/10 px-3 py-2 text-sm text-teal-800 dark:bg-teal-500/10 dark:text-teal-300">
 				Sub-Topic „{form.topicCreated}" angelegt – künftige Recherchen liefern mehr News dazu.
 			</p>
 		{/if}
 
 		<!-- article body -->
-		<div class="article-body mt-6 text-[0.97rem] text-slate-200">
+		<div class="article-body mt-6 text-[0.97rem]">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -- rendered by our escaping markdown renderer -->
 			{@html data.bodyHtml}
 		</div>
 
 		<!-- sources -->
 		{#if data.sources.length > 0}
-			<h2 class="mt-8 mb-3 text-sm font-semibold tracking-wide text-slate-400 uppercase">Quellen</h2>
+			<h2 class="text-muted mt-8 mb-3 text-sm font-semibold tracking-wide uppercase">Quellen</h2>
 			<div class="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
 				{#each data.sources as source (source.id)}
 					<a
 						href={source.url}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="w-56 shrink-0 rounded-xl border border-slate-800 bg-slate-900/60 p-4 transition hover:border-slate-600"
+						class="card w-56 shrink-0 p-4 transition hover:shadow-md dark:hover:border-slate-600"
 					>
-						<p class="truncate text-sm font-semibold text-slate-200">{source.name}</p>
-						<p class="mt-1 truncate text-xs text-slate-500">{source.url}</p>
-						<p class="mt-3 text-xs font-medium text-teal-400">Quelle öffnen ↗</p>
+						<p class="truncate text-sm font-semibold">{source.name}</p>
+						<p class="text-faint mt-1 truncate text-xs">{source.url}</p>
+						<p class="mt-3 text-xs font-medium text-teal-700 dark:text-teal-400">Quelle öffnen ↗</p>
 					</a>
 				{/each}
 			</div>
@@ -164,23 +165,25 @@
 
 		<!-- Q&A bubbles -->
 		{#if chat.length > 0}
-			<h2 class="mt-8 mb-3 text-sm font-semibold tracking-wide text-slate-400 uppercase">
+			<h2 class="text-muted mt-8 mb-3 text-sm font-semibold tracking-wide uppercase">
 				Rückfragen zum Artikel
 			</h2>
 			<div class="space-y-3">
 				{#each chat as msg, i (i)}
 					{#if msg.role === 'user'}
 						<div class="flex justify-end">
-							<div class="max-w-[85%] rounded-2xl rounded-br-md bg-teal-500/20 px-4 py-2.5 text-sm leading-relaxed text-teal-100">
+							<div
+								class="max-w-[85%] rounded-2xl rounded-br-md bg-teal-700/10 px-4 py-2.5 text-sm leading-relaxed text-teal-900 dark:bg-teal-500/20 dark:text-teal-100"
+							>
 								{msg.content}
 							</div>
 						</div>
 					{:else}
 						<div class="flex justify-start">
 							<div
-								class="article-body max-w-[85%] rounded-2xl rounded-bl-md border px-4 py-2.5 text-sm leading-relaxed {msg.error
-									? 'border-red-500/30 bg-red-500/10 text-red-300'
-									: 'border-slate-800 bg-slate-900 text-slate-200'}"
+								class="article-body max-w-[85%] rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed {msg.error
+									? 'border border-red-300 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300'
+									: 'card'}"
 							>
 								{#if msg.content}
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -203,13 +206,11 @@
 </div>
 
 <!-- sticky question bar -->
-<div class="fixed inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent pt-8 pb-4">
+<div
+	class="fixed inset-x-0 bottom-0 bg-gradient-to-t from-[#f6f5f1] via-[#f6f5f1]/95 to-transparent pt-8 pb-[max(1rem,env(safe-area-inset-bottom))] dark:from-slate-950 dark:via-slate-950/95"
+>
 	<form onsubmit={ask} class="mx-auto flex max-w-3xl items-center gap-2 px-4">
-		<a
-			href="/"
-			aria-label="Zurück zur Übersicht"
-			class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300 transition hover:border-slate-500"
-		>
+		<a href="/" aria-label="Zurück zur Übersicht" class="icon-btn h-11 w-11 shrink-0 rounded-full">
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
 			</svg>
@@ -221,16 +222,20 @@
 				? 'Frage zur News stellen …'
 				: 'Verbinde zuerst eine KI in den Einstellungen'}
 			disabled={!data.aiConfigured || sending}
-			class="h-11 min-w-0 flex-1 rounded-full border border-slate-700 bg-slate-900 px-4 text-sm outline-none placeholder:text-slate-500 focus:border-teal-400 disabled:opacity-60"
+			class="input h-11 min-w-0 flex-1 rounded-full px-4 shadow-sm disabled:opacity-60 dark:shadow-none"
 		/>
 		<button
 			type="submit"
 			disabled={!data.aiConfigured || sending || !question.trim()}
 			aria-label="Frage senden"
-			class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal-500 text-slate-950 transition hover:bg-teal-400 disabled:opacity-40"
+			class="btn-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-full disabled:opacity-40"
 		>
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.3 4.6c-.2-.6.4-1.2 1-.9l16.2 7.4c.6.3.6 1.1 0 1.4L4.3 19.9c-.6.3-1.2-.3-1-.9L6 12zm0 0h6" />
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					d="M6 12 3.3 4.6c-.2-.6.4-1.2 1-.9l16.2 7.4c.6.3.6 1.1 0 1.4L4.3 19.9c-.6.3-1.2-.3-1-.9L6 12zm0 0h6"
+				/>
 			</svg>
 		</button>
 	</form>

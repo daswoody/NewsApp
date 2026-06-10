@@ -12,7 +12,7 @@ function unauthorized(): Response {
 export const POST: RequestHandler = async ({ request }) => {
 	const user = await userFromBearer(request);
 	if (!user) return unauthorized();
-	return handleMcpPost(user.id, request);
+	return handleMcpPost(user, request);
 };
 
 // Stateless server: no server-initiated SSE stream, sessions need no cleanup.

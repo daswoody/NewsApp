@@ -1,7 +1,8 @@
 import { error, json } from '@sveltejs/kit';
 import { and, asc, eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { aiSettings, articles, chatMessages, sources } from '$lib/server/db/schema';
+import { articles, chatMessages, sources } from '$lib/server/db/schema';
+import { resolveAiSettings } from '$lib/server/app-settings';
 import type { RequestHandler } from './$types';
 
 const MAX_HISTORY = 20;
@@ -43,8 +44,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const question = String(body.question ?? '').trim();
 	if (!question || question.length > 4000) error(400, 'Ungültige Frage');
 
-	const ai = (await db.select().from(aiSettings).where(eq(aiSettings.userId, userId)).limit(1))[0];
-	if (!ai?.baseUrl || !ai?.model) {
+	const ai = await resolveAiSettings(userId);
+	if (!ai.baseUrl || !ai.model) {
 		return json(
 			{ error: 'Keine KI verbunden. Hinterlege Base-URL und Modell in den Einstellungen.' },
 			{ status: 400 }

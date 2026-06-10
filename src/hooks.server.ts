@@ -21,5 +21,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const session = await validateSession(event.cookies);
 	event.locals.user = session?.user ?? null;
 	event.locals.sessionId = session?.sessionId ?? null;
-	return resolve(event);
+
+	// theme class is rendered server-side to avoid a flash of the wrong theme
+	const theme = event.cookies.get('theme') === 'dark' ? 'dark' : '';
+	return resolve(event, {
+		transformPageChunk: ({ html }) => html.replace('%app.theme%', theme)
+	});
 };

@@ -1,14 +1,14 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
-import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { createSession, verifyPassword } from '$lib/server/auth';
+import { registrationAllowed } from '$lib/server/app-settings';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) redirect(303, '/');
-	return { allowRegistration: env.ALLOW_REGISTRATION !== 'false' };
+	return { allowRegistration: await registrationAllowed() };
 };
 
 export const actions: Actions = {

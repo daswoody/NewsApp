@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 				.select()
 				.from(topics)
 				.where(eq(topics.categoryId, selectedCategory.id))
-				.orderBy(topics.createdAt)
+				.orderBy(topics.position, topics.createdAt)
 		: [];
 	const selectedTopic = topicRows.find((t) => t.id === topicParam) ?? null;
 
