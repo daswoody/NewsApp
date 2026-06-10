@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { FONT_OPTIONS } from '$lib/theme';
+	import { FONT_OPTIONS, FONT_STYLE_OPTIONS } from '$lib/theme';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -30,7 +30,7 @@
 				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
 			</svg>
 		</a>
-		<h1 class="font-display text-lg font-bold">Admin-Panel</h1>
+		<h1 class="font-display text-lg">Admin-Panel</h1>
 		<span class="flex-1"></span>
 		<ThemeToggle />
 	</header>
@@ -338,31 +338,41 @@
 				ausgewählten Schriften.
 			</p>
 			<div class="grid gap-3 sm:grid-cols-3">
-				<label class="block">
+				<div>
 					<span class={labelClass}>Headlines (Karten + Artikel-Titel)</span>
-					<select name="headline" class="input">
+					<select name="headline" class="input" aria-label="Schrift für Headlines">
 						{#each FONT_OPTIONS as font (font.id)}
 							<option value={font.id} selected={data.typography.headline === font.id}>{font.label}</option>
 						{/each}
 					</select>
-				</label>
-				<label class="block">
+					<select name="headlineStyle" class="input mt-2" aria-label="Schriftstil für Headlines">
+						{#each FONT_STYLE_OPTIONS as style (style.id)}
+							<option value={style.id} selected={data.typography.headlineStyle === style.id}>{style.label}</option>
+						{/each}
+					</select>
+				</div>
+				<div>
 					<span class={labelClass}>Zwischenüberschriften im Artikel</span>
-					<select name="articleHeadings" class="input">
+					<select name="articleHeadings" class="input" aria-label="Schrift für Zwischenüberschriften">
 						<option value="" selected={data.typography.articleHeadings === ''}>Wie Headlines</option>
 						{#each FONT_OPTIONS as font (font.id)}
 							<option value={font.id} selected={data.typography.articleHeadings === font.id}>{font.label}</option>
 						{/each}
 					</select>
-				</label>
-				<label class="block">
+					<select name="articleHeadingsStyle" class="input mt-2" aria-label="Schriftstil für Zwischenüberschriften">
+						{#each FONT_STYLE_OPTIONS as style (style.id)}
+							<option value={style.id} selected={data.typography.articleHeadingsStyle === style.id}>{style.label}</option>
+						{/each}
+					</select>
+				</div>
+				<div>
 					<span class={labelClass}>Fließtext im Artikel</span>
-					<select name="body" class="input">
+					<select name="body" class="input" aria-label="Schrift für Fließtext">
 						{#each FONT_OPTIONS as font (font.id)}
 							<option value={font.id} selected={data.typography.body === font.id}>{font.label}</option>
 						{/each}
 					</select>
-				</label>
+				</div>
 			</div>
 			<label class="flex items-center gap-2 text-sm">
 				<input name="showCardSummary" type="checkbox" checked={data.showCardSummary} class="h-4 w-4 accent-[var(--accent)]" />

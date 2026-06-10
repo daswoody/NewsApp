@@ -22,6 +22,16 @@
 @import '@fontsource/lora/700.css';
 @import '@fontsource/source-serif-4/400.css';
 @import '@fontsource/source-serif-4/700.css';
+@import '@fontsource/inter/400-italic.css';
+@import '@fontsource/roboto/400-italic.css';
+@import '@fontsource/open-sans/400-italic.css';
+@import '@fontsource/montserrat/400-italic.css';
+@import '@fontsource/poppins/400-italic.css';
+@import '@fontsource/noto-sans/400-italic.css';
+@import '@fontsource/merriweather/400-italic.css';
+@import '@fontsource/playfair-display/400-italic.css';
+@import '@fontsource/lora/400-italic.css';
+@import '@fontsource/source-serif-4/400-italic.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -37,7 +47,11 @@
 	--card-border: transparent;
 	--radius: 16px;
 	--font-display: Georgia, 'Times New Roman', ui-serif, serif;
+	--font-display-weight: 700;
+	--font-display-style: normal;
 	--font-article-headings: var(--font-display);
+	--font-article-headings-weight: 700;
+	--font-article-headings-style: normal;
 	--font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 .dark {
@@ -69,6 +83,8 @@ body {
 @layer components {
 	.font-display {
 		font-family: var(--font-display);
+		font-weight: var(--font-display-weight);
+		font-style: var(--font-display-style);
 	}
 	.card {
 		background: var(--card);
@@ -150,15 +166,6 @@ body {
 		backdrop-filter: blur(8px);
 		border-color: var(--border);
 	}
-	/* hero image fade into the page background */
-	.hero-fade {
-		background: linear-gradient(
-			to top,
-			var(--bg) 0%,
-			color-mix(in srgb, var(--bg) 60%, transparent) 55%,
-			transparent 100%
-		);
-	}
 	/* sticky bottom areas fading over the content */
 	.bottom-fade {
 		background: linear-gradient(
@@ -193,7 +200,8 @@ body {
 .article-body h2,
 .article-body h3 {
 	font-family: var(--font-article-headings);
-	font-weight: 700;
+	font-weight: var(--font-article-headings-weight);
+	font-style: var(--font-article-headings-style);
 	margin-top: 1.75rem;
 	margin-bottom: 0.75rem;
 }

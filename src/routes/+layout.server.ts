@@ -15,7 +15,9 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		parseTheme(settings.themeDark, DEFAULT_DARK),
 		parseTypography({
 			headline: settings.fontHeadline,
+			headlineStyle: settings.fontHeadlineStyle,
 			articleHeadings: settings.fontArticleHeadings,
+			articleHeadingsStyle: settings.fontArticleHeadingsStyle,
 			body: settings.fontBody
 		})
 	);

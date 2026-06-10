@@ -1,0 +1,2 @@
+ALTER TABLE "app_settings" ADD COLUMN "font_headline_style" text DEFAULT '' NOT NULL;--> statement-breakpoint
+ALTER TABLE "app_settings" ADD COLUMN "font_article_headings_style" text DEFAULT '' NOT NULL;

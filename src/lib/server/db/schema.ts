@@ -127,7 +127,9 @@ export const appSettings = pgTable('app_settings', {
 	themeDark: text('theme_dark').notNull().default(''),
 	// typography (font ids from the self-hosted registry, '' = default)
 	fontHeadline: text('font_headline').notNull().default(''),
+	fontHeadlineStyle: text('font_headline_style').notNull().default(''),
 	fontArticleHeadings: text('font_article_headings').notNull().default(''),
+	fontArticleHeadingsStyle: text('font_article_headings_style').notNull().default(''),
 	fontBody: text('font_body').notNull().default(''),
 	showCardSummary: boolean('show_card_summary').notNull().default(true)
 });

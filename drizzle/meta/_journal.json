@@ -36,6 +36,13 @@
       "when": 1781128390866,
       "tag": "0004_military_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781129852843,
+      "tag": "0005_slippery_richard_fisk",
+      "breakpoints": true
     }
   ]
 }
