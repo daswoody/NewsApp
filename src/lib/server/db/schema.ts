@@ -131,6 +131,8 @@ export const appSettings = pgTable('app_settings', {
 	fontArticleHeadings: text('font_article_headings').notNull().default(''),
 	fontArticleHeadingsStyle: text('font_article_headings_style').notNull().default(''),
 	fontBody: text('font_body').notNull().default(''),
+	// parallax strength in percent (0-100 = slider 0-1)
+	parallaxStrength: integer('parallax_strength').notNull().default(35),
 	showCardSummary: boolean('show_card_summary').notNull().default(true)
 });
 

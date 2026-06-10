@@ -1,0 +1,1 @@
+ALTER TABLE "app_settings" ADD COLUMN "parallax_strength" integer DEFAULT 35 NOT NULL;

@@ -93,7 +93,7 @@
 			class="bg-soft relative aspect-[16/10] w-full overflow-hidden rounded-b-[calc(var(--radius)*1.25)] sm:aspect-[16/8] sm:rounded-[calc(var(--radius)*1.25)]"
 		>
 			{#if data.article.imagePath}
-				<div use:parallax={20} class="h-full w-full">
+				<div use:parallax={1.4} class="h-full w-full">
 					<img src={`/images/${data.article.imagePath}`} alt="" class="h-full w-full object-cover" />
 				</div>
 			{:else}

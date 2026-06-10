@@ -167,11 +167,17 @@ function tokenBlock(t: ThemeTokens): string {
 	].join(' ');
 }
 
-export function buildThemeCss(light: ThemeTokens, dark: ThemeTokens, typo: Typography): string {
+export function buildThemeCss(
+	light: ThemeTokens,
+	dark: ThemeTokens,
+	typo: Typography,
+	parallax = 0.35 // 0 = off, 1 = very strong
+): string {
 	const styleVars = (style: FontStyle) =>
 		style === 'bold' ? ['700', 'normal'] : style === 'italic' ? ['400', 'italic'] : ['400', 'normal'];
 	const [headlineWeight, headlineStyle] = styleVars(typo.headlineStyle);
 	const [articleWeight, articleStyle] = styleVars(typo.articleHeadingsStyle);
+	const parallaxPx = Math.round(Math.min(1, Math.max(0, parallax)) * 40);
 	const fonts = [
 		`--font-display: ${fontFamily(typo.headline, 'system-serif')};`,
 		`--font-display-weight: ${headlineWeight};`,
@@ -179,7 +185,8 @@ export function buildThemeCss(light: ThemeTokens, dark: ThemeTokens, typo: Typog
 		`--font-article-headings: ${fontFamily(typo.articleHeadings, typo.headline)};`,
 		`--font-article-headings-weight: ${articleWeight};`,
 		`--font-article-headings-style: ${articleStyle};`,
-		`--font-body: ${fontFamily(typo.body, 'system-sans')};`
+		`--font-body: ${fontFamily(typo.body, 'system-sans')};`,
+		`--parallax: ${parallaxPx}px;`
 	].join(' ');
 	// doubled :root selectors out-rank the defaults in app.css regardless of
 	// the order in which the browser receives the two stylesheets

@@ -76,6 +76,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			body: settings.fontBody
 		}),
 		showCardSummary: settings.showCardSummary,
+		parallaxStrength: settings.parallaxStrength / 100,
 		mcpUrl: `${url.origin}/mcp`
 	};
 };
@@ -270,7 +271,8 @@ export const actions: Actions = {
 			fontHeadlineStyle: '',
 			fontArticleHeadings: '',
 			fontArticleHeadingsStyle: '',
-			fontBody: ''
+			fontBody: '',
+			parallaxStrength: 35
 		});
 		return { ok: true };
 	},
@@ -291,12 +293,16 @@ export const actions: Actions = {
 				return fail(400, { error: 'Unbekannter Schriftstil.' });
 			}
 		}
+		const parallax = Number(form.get('parallax'));
 		await updateAppSettings({
 			fontHeadline,
 			fontHeadlineStyle,
 			fontArticleHeadings,
 			fontArticleHeadingsStyle,
 			fontBody,
+			parallaxStrength: Number.isFinite(parallax)
+				? Math.round(Math.min(1, Math.max(0, parallax)) * 100)
+				: 35,
 			showCardSummary: form.get('showCardSummary') === 'on'
 		});
 		return { ok: true, typographySaved: true };
