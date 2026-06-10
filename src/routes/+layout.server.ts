@@ -8,11 +8,13 @@ import {
 } from '$lib/theme';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ locals }) => {
+export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 	const settings = await getAppSettings();
+	const light = parseTheme(settings.themeLight, DEFAULT_LIGHT);
+	const dark = parseTheme(settings.themeDark, DEFAULT_DARK);
 	const themeCss = buildThemeCss(
-		parseTheme(settings.themeLight, DEFAULT_LIGHT),
-		parseTheme(settings.themeDark, DEFAULT_DARK),
+		light,
+		dark,
 		parseTypography({
 			headline: settings.fontHeadline,
 			headlineStyle: settings.fontHeadlineStyle,
@@ -27,6 +29,8 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		user: locals.user
 			? { id: locals.user.id, nickname: locals.user.nickname, isAdmin: locals.user.isAdmin }
 			: null,
-		themeCss
+		themeCss,
+		// colors the browser chrome (Android status bar) to match the mode
+		themeColor: cookies.get('theme') === 'dark' ? dark.bg : light.bg
 	};
 };

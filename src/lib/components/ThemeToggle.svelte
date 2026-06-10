@@ -9,6 +9,10 @@
 		dark = !dark;
 		document.documentElement.classList.toggle('dark', dark);
 		document.cookie = `theme=${dark ? 'dark' : 'light'}; path=/; max-age=31536000; SameSite=Lax`;
+		// recolor the browser chrome (Android status bar) immediately
+		const meta = document.querySelector('meta[name="theme-color"]');
+		const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+		if (meta && bg) meta.setAttribute('content', bg);
 	}
 </script>
 
