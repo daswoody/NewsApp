@@ -36,7 +36,26 @@
 		)
 	);
 
-	const researchPrompt = `Hole über das News-MCP meine Interessen (get_interests) und prüfe mit list_recent_articles, was bereits vorhanden ist. Recherchiere dann im Web die wichtigsten aktuellen Nachrichten zu jeder Kategorie und jedem Hot Topic, prüfe Fakten über mehrere Quellen hinweg und speichere jeden Artikel mit save_article (Headline, Teaser, ausführlicher Artikel in Markdown, Bild-URL aus einer Quelle, alle Quellen).`;
+	const researchPrompt = `Du bist mein persönlicher News-Redakteur. Erstelle jetzt meine heutige News-Ausgabe über das News-MCP.
+
+Ablauf:
+1. Rufe get_interests auf. Du erhältst alle Kategorien und Hot Topics mit Beschreibungen – die Beschreibungen definieren, was mich interessiert. (Enthält die Antwort mehrere Nutzer, bearbeite jeden Nutzer separat nach denselben Regeln.)
+2. Rufe list_recent_articles mit days: 3 auf und merke dir die vorhandenen Headlines. Nachrichten, die inhaltlich schon abgedeckt sind, legst du nicht erneut an.
+3. Recherchiere für jede Kategorie und jedes Hot Topic im Web die relevanten Nachrichten der letzten 24–48 Stunden.
+4. Gruppiere die Funde: Meldungen zum selben Ereignis bzw. derselben Story aus mehreren Quellen fasst du zu EINEM Artikel zusammen. Thematisch unterschiedliche Meldungen bekommen jeweils einen eigenen Artikel.
+5. Faktencheck: Prüfe Kernaussagen nach Möglichkeit über mindestens zwei unabhängige Quellen und bevorzuge Primärquellen und etablierte Medien. Was sich nicht bestätigen lässt, kennzeichnest du als unbestätigt oder lässt es weg.
+6. Speichere jeden Artikel mit save_article – maximal 5 neue Artikel pro Kategorie (Hot-Topic-Artikel zählen mit). Gibt es mehr Kandidaten, priorisiere nach Relevanz für meine Interessen.
+
+Artikelformat für save_article:
+- category_id / topic_id: IDs aus get_interests; passt der Artikel zu einem Hot Topic, gib die topic_id mit an.
+- headline: prägnant und sachlich, kein Clickbait.
+- summary: 2–3 Sätze Teaser für die News-Karte.
+- content: ausführlicher Artikel in Markdown (ca. 300–600 Wörter) mit Zwischenüberschriften: Was ist passiert? Kontext/Hintergrund. Einordnung. Fachlicher, sachlicher Schreibstil – keine Spekulationen, keine Meinung. Passende YouTube-Links auf eigener Zeile werden als Video eingebettet.
+- image_url: eine direkte Bild-Datei-URL aus einer der Quellen (z. B. das og:image), nicht die Artikelseite. Meldet die Antwort image_cached: false, suche eine andere Bild-URL und reiche sie mit update_article nach.
+- sources: alle tatsächlich verwendeten Quellen mit Name und URL.
+- published_at: Datum des Ereignisses (ISO 8601), falls bekannt.
+
+Zum Abschluss gib mir eine kurze Übersicht: pro Kategorie die angelegten Artikel (Headlines) und was du übersprungen hast (Duplikate oder zu dünn belegt).`;
 
 	const labelClass = 'mb-1 block text-xs font-medium text-muted';
 
@@ -460,7 +479,7 @@
 					MCP liefert die News nicht von allein – starte die Recherche mit diesem Prompt (oder
 					automatisiere ihn, z. B. als wiederkehrende Aufgabe):
 				</p>
-				<div class="bg-soft mt-2 rounded-xl p-3 text-xs leading-relaxed select-all">
+				<div class="bg-soft mt-2 rounded-xl p-3 text-xs leading-relaxed whitespace-pre-line select-all">
 					{researchPrompt}
 				</div>
 			</div>
