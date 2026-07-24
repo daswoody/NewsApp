@@ -23,7 +23,8 @@ Unter jedem Artikel kannst du einer angebundenen KI (OpenAI-kompatible API) Rüc
   Aufbewahrung, das Ereignisdatum (`published_at`) wird auf Karte und Artikelseite angezeigt
 - Kategorie und Hot Topic erscheinen als zwei gleich gestaltete Tag-Chips
 - Artikel ohne Bild bekommen einen aus Kategorie und Artikel-ID berechneten Pastell-Verlauf
-  (reines CSS, hell im Light Mode, gedämpft im Dark Mode)
+  (reines CSS, hell im Light Mode, gedämpft im Dark Mode); Intensität und Farbsättigung
+  sind im Admin-Panel per Regler mit Live-Vorschau einstellbar
 - Editorial-Design mit Dark/Light Mode (Umschalter im Header) und dezentem
   Parallax-Effekt auf Bildern
 - Artikelansicht: Titelbild mit Fade-out, Markdown-Volltext, YouTube-Embeds,

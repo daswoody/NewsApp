@@ -119,6 +119,40 @@ export function parseTypography(raw: Partial<Record<keyof Typography, string>>):
 	};
 }
 
+/* ---------- gradient placeholders (articles without an image) ---------- */
+
+export interface PlaceholderStyle {
+	intensity: number; // 0 = barely visible, 1 = strong contrast to the card
+	saturation: number; // 0 = almost grey, 1 = vivid
+}
+
+export const DEFAULT_PLACEHOLDER: PlaceholderStyle = { intensity: 0.5, saturation: 0.5 };
+
+/**
+ * Saturation and lightness of the three gradient blobs. Intensity moves the
+ * lightness away from the card background – upwards in light mode, downwards
+ * in dark mode – so one slider works in both modes. Hues and blob positions
+ * are per article and come from placeholder-gradient.ts.
+ */
+export function placeholderVars(style: PlaceholderStyle, dark: boolean): string {
+	const i = Math.min(1, Math.max(0, style.intensity));
+	const s = Math.min(1, Math.max(0, style.saturation));
+	const round = (value: number) => Math.round(Math.min(100, Math.max(0, value)));
+	// light mode is piecewise so the middle of the slider keeps the pastel
+	// default (72%) while the end still reaches a fully saturated 100%
+	const lightSat = s <= 0.5 ? 20 + 104 * s : 72 + 56 * (s - 0.5);
+	const [sat, base, a, b, c] = dark
+		? [6 + 40 * s, 9 + 10 * i, 13 + 18 * i, 11 + 14 * i, 14 + 20 * i]
+		: [lightSat, 97 - 8 * i, 93 - 16 * i, 95 - 12 * i, 93 - 14 * i];
+	return [
+		`--ph-s: ${round(sat)}%;`,
+		`--ph-l-base: ${round(base)}%;`,
+		`--ph-l-a: ${round(a)}%;`,
+		`--ph-l-b: ${round(b)}%;`,
+		`--ph-l-c: ${round(c)}%;`
+	].join(' ');
+}
+
 /* ---------- parsing + CSS generation ---------- */
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -171,7 +205,8 @@ export function buildThemeCss(
 	light: ThemeTokens,
 	dark: ThemeTokens,
 	typo: Typography,
-	parallax = 0.35 // 0 = off, 1 = very strong
+	parallax = 0.35, // 0 = off, 1 = very strong
+	placeholder: PlaceholderStyle = DEFAULT_PLACEHOLDER
 ): string {
 	const styleVars = (style: FontStyle) =>
 		style === 'bold' ? ['700', 'normal'] : style === 'italic' ? ['400', 'italic'] : ['400', 'normal'];
@@ -190,5 +225,10 @@ export function buildThemeCss(
 	].join(' ');
 	// doubled :root selectors out-rank the defaults in app.css regardless of
 	// the order in which the browser receives the two stylesheets
-	return `:root:root { ${tokenBlock(light)} ${fonts} }\n:root:root.dark { ${tokenBlock(dark)} }`;
+	return (
+		`:root:root { ${tokenBlock(light)} ${fonts} }\n` +
+		`:root:root.dark { ${tokenBlock(dark)} }\n` +
+		`:root:root .gradient-ph { ${placeholderVars(placeholder, false)} }\n` +
+		`:root:root.dark .gradient-ph { ${placeholderVars(placeholder, true)} }`
+	);
 }

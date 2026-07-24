@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { enhance } from '$app/forms';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { FONT_OPTIONS, FONT_STYLE_OPTIONS } from '$lib/theme';
+	import { FONT_OPTIONS, FONT_STYLE_OPTIONS, placeholderVars } from '$lib/theme';
+	import { placeholderGradient } from '$lib/placeholder-gradient';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -20,10 +22,27 @@
 		{ mode: 'dark', title: 'Dark Mode', theme: data.themeDark }
 	]);
 
-	let parallaxValue = $state(0.35);
+	// seeded from the stored settings so the labels are right during SSR, and
+	// re-synced whenever a save reloads the page data
+	let parallaxValue = $state(untrack(() => data.parallaxStrength));
 	$effect(() => {
 		parallaxValue = data.parallaxStrength;
 	});
+
+	let phIntensity = $state(untrack(() => data.placeholderIntensity));
+	let phSaturation = $state(untrack(() => data.placeholderSaturation));
+	$effect(() => {
+		phIntensity = data.placeholderIntensity;
+		phSaturation = data.placeholderSaturation;
+	});
+
+	// live preview: the saved values live in the injected theme CSS, while the
+	// sliders override them locally so dragging shows the result right away
+	const previewStyle = $derived(
+		(dark: boolean) =>
+			`${placeholderVars({ intensity: phIntensity, saturation: phSaturation }, dark)} `
+	);
+	const previewSeeds = ['Vorschau A', 'Vorschau B', 'Vorschau C'];
 </script>
 
 <svelte:head><title>Admin – News</title></svelte:head>
@@ -406,6 +425,64 @@
 				<input name="gradientPlaceholder" type="checkbox" checked={data.gradientPlaceholder} class="h-4 w-4 accent-[var(--accent)]" />
 				Fehlende Bilder als Farbverlauf statt 📰-Symbol darstellen
 			</label>
+
+			<!-- gradient placeholders: sliders with a preview for both modes -->
+			<div class="subcard space-y-3 p-3">
+				<p class="text-xs font-semibold">Farbverlauf für fehlende Bilder</p>
+				<div class="grid gap-3 sm:grid-cols-2">
+					<label class="block">
+						<span class={labelClass}>
+							Intensität: {phIntensity.toFixed(2)}
+							{phIntensity <= 0.1 ? '(sehr dezent)' : phIntensity >= 0.9 ? '(sehr kräftig)' : ''}
+						</span>
+						<input
+							name="phIntensity"
+							type="range"
+							min="0"
+							max="1"
+							step="0.05"
+							bind:value={phIntensity}
+							class="w-full accent-[var(--accent)]"
+						/>
+					</label>
+					<label class="block">
+						<span class={labelClass}>
+							Farbsättigung: {phSaturation.toFixed(2)}
+							{phSaturation <= 0.1 ? '(fast grau)' : phSaturation >= 0.9 ? '(sehr bunt)' : ''}
+						</span>
+						<input
+							name="phSaturation"
+							type="range"
+							min="0"
+							max="1"
+							step="0.05"
+							bind:value={phSaturation}
+							class="w-full accent-[var(--accent)]"
+						/>
+					</label>
+				</div>
+				<div class="grid gap-3 sm:grid-cols-2">
+					{#each [{ dark: false, title: 'Light Mode', theme: data.themeLight }, { dark: true, title: 'Dark Mode', theme: data.themeDark }] as preview (preview.title)}
+						<div
+							class="rounded-xl border p-3"
+							style={`background: ${preview.theme.newsCard}; border-color: ${preview.theme.border}`}
+						>
+							<p class="mb-2 text-[0.7rem] font-medium" style={`color: ${preview.theme.text}`}>
+								{preview.title}
+							</p>
+							<div class="grid grid-cols-3 gap-2">
+								{#each previewSeeds as seed, i (seed)}
+									<div
+										class="gradient-ph aspect-[4/3] rounded-lg"
+										style={previewStyle(preview.dark) +
+											placeholderGradient(seed, data.categoryTitles[i] ?? seed)}
+									></div>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
 			<div class="flex items-center gap-3">
 				<button type="submit" class="btn-primary px-4 py-1.5 text-sm">Speichern</button>
 				{#if form && 'typographySaved' in form && form.typographySaved}
