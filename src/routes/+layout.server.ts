@@ -22,7 +22,11 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 			articleHeadingsStyle: settings.fontArticleHeadingsStyle,
 			body: settings.fontBody
 		}),
-		settings.parallaxStrength / 100
+		settings.parallaxStrength / 100,
+		{
+			intensity: settings.placeholderIntensity / 100,
+			saturation: settings.placeholderSaturation / 100
+		}
 	);
 
 	return {

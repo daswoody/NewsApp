@@ -2,7 +2,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { randomBytes } from 'node:crypto';
 import { and, eq, isNotNull } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { articles, groups, mcpTokens, users } from '$lib/server/db/schema';
+import { articles, categories, groups, mcpTokens, users } from '$lib/server/db/schema';
 import { hashPassword, sha256 } from '$lib/server/auth';
 import { getAppSettings, updateAppSettings } from '$lib/server/app-settings';
 import { deleteImage } from '$lib/server/images';
@@ -52,6 +52,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		.where(isNotNull(mcpTokens.groupId))
 		.orderBy(mcpTokens.createdAt);
 
+	const catTitles = await db
+		.selectDistinct({ title: categories.title })
+		.from(categories)
+		.orderBy(categories.title)
+		.limit(3);
+	const previewTitles = ['Kategorie A', 'Kategorie B', 'Kategorie C'].map(
+		(fallback, i) => catTitles[i]?.title ?? fallback
+	);
+
 	return {
 		selfId: admin.id,
 		users: allUsers,
@@ -77,6 +86,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		}),
 		showCardSummary: settings.showCardSummary,
 		showCardDate: settings.showCardDate,
+		gradientPlaceholder: settings.gradientPlaceholder,
+		placeholderIntensity: settings.placeholderIntensity / 100,
+		placeholderSaturation: settings.placeholderSaturation / 100,
+		// real category titles so the preview shows the hues actually in use
+		categoryTitles: previewTitles,
 		parallaxStrength: settings.parallaxStrength / 100,
 		mcpUrl: `${url.origin}/mcp`
 	};
@@ -273,7 +287,9 @@ export const actions: Actions = {
 			fontArticleHeadings: '',
 			fontArticleHeadingsStyle: '',
 			fontBody: '',
-			parallaxStrength: 35
+			parallaxStrength: 35,
+			placeholderIntensity: 50,
+			placeholderSaturation: 50
 		});
 		return { ok: true };
 	},
@@ -295,6 +311,10 @@ export const actions: Actions = {
 			}
 		}
 		const parallax = Number(form.get('parallax'));
+		const percent = (value: FormDataEntryValue | null, fallback: number) => {
+			const num = Number(value);
+			return Number.isFinite(num) ? Math.round(Math.min(1, Math.max(0, num)) * 100) : fallback;
+		};
 		await updateAppSettings({
 			fontHeadline,
 			fontHeadlineStyle,
@@ -305,7 +325,10 @@ export const actions: Actions = {
 				? Math.round(Math.min(1, Math.max(0, parallax)) * 100)
 				: 35,
 			showCardSummary: form.get('showCardSummary') === 'on',
-			showCardDate: form.get('showCardDate') === 'on'
+			showCardDate: form.get('showCardDate') === 'on',
+			gradientPlaceholder: form.get('gradientPlaceholder') === 'on',
+			placeholderIntensity: percent(form.get('phIntensity'), 50),
+			placeholderSaturation: percent(form.get('phSaturation'), 50)
 		});
 		return { ok: true, typographySaved: true };
 	}

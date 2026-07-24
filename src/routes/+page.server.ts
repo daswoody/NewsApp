@@ -64,6 +64,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		nickname: locals.user.nickname,
 		showCardSummary: settings.showCardSummary,
 		showCardDate: settings.showCardDate,
+		gradientPlaceholder: settings.gradientPlaceholder,
 		categories: cats.map((c) => ({ id: c.id, title: c.title })),
 		topics: topicRows.map((t) => ({ id: t.id, title: t.title })),
 		selectedCategoryId: selectedCategory?.id ?? null,

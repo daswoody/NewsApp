@@ -136,7 +136,12 @@ export const appSettings = pgTable('app_settings', {
 	// parallax strength in percent (0-100 = slider 0-1)
 	parallaxStrength: integer('parallax_strength').notNull().default(35),
 	showCardSummary: boolean('show_card_summary').notNull().default(true),
-	showCardDate: boolean('show_card_date').notNull().default(true)
+	showCardDate: boolean('show_card_date').notNull().default(true),
+	// missing images show a generated pastel gradient instead of the 📰 icon
+	gradientPlaceholder: boolean('gradient_placeholder').notNull().default(true),
+	// look of those gradients in percent (0-100 = slider 0-1)
+	placeholderIntensity: integer('placeholder_intensity').notNull().default(50),
+	placeholderSaturation: integer('placeholder_saturation').notNull().default(50)
 });
 
 export type User = typeof users.$inferSelect;

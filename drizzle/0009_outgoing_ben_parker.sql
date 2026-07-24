@@ -1,0 +1,2 @@
+ALTER TABLE "app_settings" ADD COLUMN "placeholder_intensity" integer DEFAULT 50 NOT NULL;--> statement-breakpoint
+ALTER TABLE "app_settings" ADD COLUMN "placeholder_saturation" integer DEFAULT 50 NOT NULL;

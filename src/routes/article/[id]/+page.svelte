@@ -5,6 +5,7 @@
 	import { chipColor } from '$lib/chip-colors';
 	import { shortDate } from '$lib/dates';
 	import { renderMarkdown } from '$lib/markdown';
+	import { placeholderGradient } from '$lib/placeholder-gradient';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -92,6 +93,11 @@
 				<div use:parallax={1.4} class="h-full w-full">
 					<img src={`/images/${data.article.imagePath}`} alt="" class="h-full w-full object-cover" />
 				</div>
+			{:else if data.gradientPlaceholder}
+				<div
+					class="gradient-ph h-full w-full"
+					style={placeholderGradient(data.article.id, data.categoryTitle)}
+				></div>
 			{:else}
 				<div class="bg-soft flex h-full w-full items-center justify-center text-6xl">📰</div>
 			{/if}
