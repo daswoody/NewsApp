@@ -18,7 +18,8 @@ async function deleteArticleRows(rows: { id: string; imagePath: string | null }[
 }
 
 /**
- * Retention rules:
+ * Retention rules (measured from the day the article was stored, so an old
+ * event researched today still gets its full retention window):
  *  - per user: articles older than `deleteAfterDays` are removed, saved ones are kept
  *  - hard cap: everything older than 12 months is removed, saved or not
  */
@@ -38,7 +39,7 @@ export async function runCleanup(): Promise<void> {
 					and(
 						eq(articles.userId, user.id),
 						eq(articles.saved, false),
-						lt(articles.publishedAt, cutoff)
+						lt(articles.createdAt, cutoff)
 					)
 				);
 			deleted += await deleteArticleRows(rows);
@@ -48,7 +49,7 @@ export async function runCleanup(): Promise<void> {
 		const oldRows = await db
 			.select({ id: articles.id, imagePath: articles.imagePath })
 			.from(articles)
-			.where(lt(articles.publishedAt, hardCutoff));
+			.where(lt(articles.createdAt, hardCutoff));
 		deleted += await deleteArticleRows(oldRows);
 
 		await db.delete(sessions).where(lt(sessions.expiresAt, new Date()));

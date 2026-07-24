@@ -76,6 +76,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			body: settings.fontBody
 		}),
 		showCardSummary: settings.showCardSummary,
+		showCardDate: settings.showCardDate,
 		parallaxStrength: settings.parallaxStrength / 100,
 		mcpUrl: `${url.origin}/mcp`
 	};
@@ -303,7 +304,8 @@ export const actions: Actions = {
 			parallaxStrength: Number.isFinite(parallax)
 				? Math.round(Math.min(1, Math.max(0, parallax)) * 100)
 				: 35,
-			showCardSummary: form.get('showCardSummary') === 'on'
+			showCardSummary: form.get('showCardSummary') === 'on',
+			showCardDate: form.get('showCardDate') === 'on'
 		});
 		return { ok: true, typographySaved: true };
 	}

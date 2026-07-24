@@ -11,13 +11,16 @@ Unter jedem Artikel kannst du einer angebundenen KI (OpenAI-kompatible API) Rüc
 - Admin-Panel: Nutzer anlegen/löschen, Registrierung an-/abschalten, Gruppen-Verwaltung,
   Theme-Editor (Farben inkl. getrennter UI-/News-Karten-Farbe und Eckenradius je
   Light/Dark Mode; selbst gehostete Google Fonts für Headlines, Artikel-Zwischenüberschriften
-  und Fließtext; Vorschautext auf Karten abschaltbar)
+  und Fließtext; Vorschautext und Datum auf Karten abschaltbar)
 - Konto-Einstellungen: Spitzname/Passwort ändern, Account löschen, Löschintervall
 - Kategorien + Hot Topics mit Beschreibungstexten als Recherche-Auftrag für die KI,
   per Pfeiltasten sortierbar (bestimmt die Chip-Reihenfolge)
 - News-Startseite: Kategorie-Chips („Alle", „★ Gemerkt", Kategorien, zweite Zeile Hot Topics) –
   sticky am oberen Rand, auf Mobile als Daumen-freundliche Leiste unten fixiert;
   Karten im responsiven Grid, nach Tagen gruppiert (Heute/Gestern/Datum)
+- Zwei Daten pro Artikel: der Anlage-Zeitpunkt bestimmt Sortierung, Tagesgruppen und
+  Aufbewahrung, das Ereignisdatum (`published_at`) wird auf Karte und Artikelseite angezeigt
+- Kategorie und Hot Topic erscheinen als zwei getrennte Tag-Chips
 - Editorial-Design mit Dark/Light Mode (Umschalter im Header) und dezentem
   Parallax-Effekt auf Bildern
 - Artikelansicht: Titelbild mit Fade-out, Markdown-Volltext, YouTube-Embeds,

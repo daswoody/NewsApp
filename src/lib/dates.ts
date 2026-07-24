@@ -28,12 +28,16 @@ export function shortDate(value: Date | string): string {
 	}).format(new Date(value));
 }
 
-export function groupByDay<T extends { publishedAt: Date | string }>(
+/**
+ * Groups by the day the article was stored, not by the day the event
+ * happened – otherwise late research would slip in below older cards.
+ */
+export function groupByDay<T extends { createdAt: Date | string }>(
 	items: T[]
 ): { label: string; items: T[] }[] {
 	const groups: { label: string; items: T[] }[] = [];
 	for (const item of items) {
-		const label = dayLabel(item.publishedAt);
+		const label = dayLabel(item.createdAt);
 		const last = groups[groups.length - 1];
 		if (last && last.label === label) last.items.push(item);
 		else groups.push({ label, items: [item] });

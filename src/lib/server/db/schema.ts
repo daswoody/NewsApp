@@ -72,7 +72,9 @@ export const articles = pgTable('articles', {
 	content: text('content').notNull(),
 	imagePath: text('image_path'),
 	saved: boolean('saved').notNull().default(false),
+	// day the news event happened – shown to the reader
 	publishedAt: timestamp('published_at', { withTimezone: true }).notNull().defaultNow(),
+	// day the article was stored – drives sorting, day grouping and retention
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });
 
@@ -133,7 +135,8 @@ export const appSettings = pgTable('app_settings', {
 	fontBody: text('font_body').notNull().default(''),
 	// parallax strength in percent (0-100 = slider 0-1)
 	parallaxStrength: integer('parallax_strength').notNull().default(35),
-	showCardSummary: boolean('show_card_summary').notNull().default(true)
+	showCardSummary: boolean('show_card_summary').notNull().default(true),
+	showCardDate: boolean('show_card_date').notNull().default(true)
 });
 
 export type User = typeof users.$inferSelect;

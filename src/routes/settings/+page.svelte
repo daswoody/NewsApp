@@ -53,7 +53,7 @@ Artikelformat für save_article:
 - content: ausführlicher Artikel in Markdown (ca. 300–600 Wörter) mit Zwischenüberschriften: Was ist passiert? Kontext/Hintergrund. Einordnung. Fachlicher, sachlicher Schreibstil – keine Spekulationen, keine Meinung. Passende YouTube-Links auf eigener Zeile werden als Video eingebettet.
 - image_url: eine direkte Bild-Datei-URL aus einer der Quellen (z. B. das og:image), nicht die Artikelseite. Meldet die Antwort image_cached: false, suche eine andere Bild-URL und reiche sie mit update_article nach.
 - sources: alle tatsächlich verwendeten Quellen mit Name und URL.
-- published_at: Datum des Ereignisses (ISO 8601), falls bekannt.
+- published_at: Datum des Ereignisses (ISO 8601), falls bekannt. Es wird nur angezeigt – sortiert wird immer nach dem Zeitpunkt, an dem du den Artikel anlegst.
 
 Zum Abschluss gib mir eine kurze Übersicht: pro Kategorie die angelegten Artikel (Headlines) und was du übersprungen hast (Duplikate oder zu dünn belegt).`;
 

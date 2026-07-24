@@ -14,6 +14,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const catParam = url.searchParams.get('cat');
 	const topicParam = url.searchParams.get('topic');
 
+	const settings = await getAppSettings();
+
 	const cats = await db
 		.select()
 		.from(categories)
@@ -45,6 +47,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			imagePath: articles.imagePath,
 			saved: articles.saved,
 			publishedAt: articles.publishedAt,
+			createdAt: articles.createdAt,
 			categoryTitle: categories.title,
 			topicTitle: articleTopic.title
 		})
@@ -52,12 +55,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		.innerJoin(categories, eq(articles.categoryId, categories.id))
 		.leftJoin(articleTopic, eq(articles.topicId, articleTopic.id))
 		.where(and(...filters))
-		.orderBy(desc(articles.publishedAt))
+		// newest by storage date: articles researched later stay on top even
+		// when the underlying event happened a few days ago
+		.orderBy(desc(articles.createdAt))
 		.limit(300);
 
 	return {
 		nickname: locals.user.nickname,
-		showCardSummary: (await getAppSettings()).showCardSummary,
+		showCardSummary: settings.showCardSummary,
+		showCardDate: settings.showCardDate,
 		categories: cats.map((c) => ({ id: c.id, title: c.title })),
 		topics: topicRows.map((t) => ({ id: t.id, title: t.title })),
 		selectedCategoryId: selectedCategory?.id ?? null,

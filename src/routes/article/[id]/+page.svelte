@@ -2,16 +2,12 @@
 	import { enhance } from '$app/forms';
 	import StarButton from '$lib/components/StarButton.svelte';
 	import { parallax } from '$lib/actions/parallax';
-	import { chipColor } from '$lib/chip-colors';
+	import { chipColor, chipColorSoft } from '$lib/chip-colors';
 	import { shortDate } from '$lib/dates';
 	import { renderMarkdown } from '$lib/markdown';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
-
-	const tag = $derived(
-		data.topicTitle ? `${data.categoryTitle} / ${data.topicTitle}` : data.categoryTitle
-	);
 
 	let showTopicForm = $state(false);
 	const topicSuggestion = $derived(
@@ -115,9 +111,19 @@
 
 		<!-- meta row -->
 		<div class="text-muted mt-3 flex flex-wrap items-center gap-2 text-sm">
-			<span>{shortDate(data.article.publishedAt)}</span>
+			<!-- day of the news event; the storage date only drives the sorting -->
+			<span title={`Im System angelegt am ${shortDate(data.article.createdAt)}`}>
+				{shortDate(data.article.publishedAt)}
+			</span>
 			<span class="text-faint">•</span>
-			<span class="rounded-md px-2.5 py-1 text-xs font-semibold {chipColor(data.categoryTitle)}">{tag}</span>
+			<span class="rounded-md px-2.5 py-1 text-xs font-semibold {chipColor(data.categoryTitle)}">
+				{data.categoryTitle}
+			</span>
+			{#if data.topicTitle}
+				<span class="rounded-md px-2.5 py-1 text-xs font-semibold {chipColorSoft(data.categoryTitle)}">
+					{data.topicTitle}
+				</span>
+			{/if}
 			<span class="flex-1"></span>
 			<StarButton articleId={data.article.id} saved={data.article.saved} action="?/toggleSave" />
 			{#if !data.article.hasTopic && !showTopicForm}
