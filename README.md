@@ -20,7 +20,7 @@ Unter jedem Artikel kannst du einer angebundenen KI (OpenAI-kompatible API) Rüc
   Karten im responsiven Grid, nach Tagen gruppiert (Heute/Gestern/Datum)
 - Zwei Daten pro Artikel: der Anlage-Zeitpunkt bestimmt Sortierung, Tagesgruppen und
   Aufbewahrung, das Ereignisdatum (`published_at`) wird auf Karte und Artikelseite angezeigt
-- Kategorie und Hot Topic erscheinen als zwei getrennte Tag-Chips
+- Kategorie und Hot Topic erscheinen als zwei gleich gestaltete Tag-Chips
 - Editorial-Design mit Dark/Light Mode (Umschalter im Header) und dezentem
   Parallax-Effekt auf Bildern
 - Artikelansicht: Titelbild mit Fade-out, Markdown-Volltext, YouTube-Embeds,
