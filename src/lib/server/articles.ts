@@ -227,7 +227,11 @@ export async function getInterestsForGroup(groupId: string) {
 	return result;
 }
 
-/** Recent headlines so the AI can avoid storing duplicates. */
+/**
+ * Recent headlines so the AI can avoid storing duplicates. The window is
+ * measured on the storage date, so articles stored today always show up –
+ * even when they cover an event from a few days ago.
+ */
 export async function getRecentArticles(scope: TokenScope, days: number) {
 	const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 	let userFilter;
@@ -251,17 +255,19 @@ export async function getRecentArticles(scope: TokenScope, days: number) {
 			userId: articles.userId,
 			categoryId: articles.categoryId,
 			topicId: articles.topicId,
-			publishedAt: articles.publishedAt
+			publishedAt: articles.publishedAt,
+			createdAt: articles.createdAt
 		})
 		.from(articles)
-		.where(and(userFilter, gte(articles.publishedAt, since)))
-		.orderBy(desc(articles.publishedAt));
+		.where(and(userFilter, gte(articles.createdAt, since)))
+		.orderBy(desc(articles.createdAt));
 	return rows.map((r) => ({
 		article_id: r.id,
 		headline: r.headline,
 		user_id: r.userId,
 		category_id: r.categoryId,
 		topic_id: r.topicId,
-		published_at: r.publishedAt.toISOString()
+		published_at: r.publishedAt.toISOString(),
+		stored_at: r.createdAt.toISOString()
 	}));
 }

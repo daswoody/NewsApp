@@ -27,7 +27,7 @@ const TOOLS = [
 	{
 		name: 'list_recent_articles',
 		description:
-			'Lists headlines of recently saved articles so you can avoid saving duplicate news. Optionally pass the number of days to look back (default 3).',
+			'Lists headlines of recently saved articles so you can avoid saving duplicate news. Optionally pass the number of days to look back (default 3); the window counts from the day an article was stored (stored_at), while published_at is the day of the news event.',
 		inputSchema: {
 			type: 'object',
 			properties: {
@@ -65,7 +65,8 @@ const TOOLS = [
 				},
 				published_at: {
 					type: 'string',
-					description: 'Optional ISO 8601 date of the news event (defaults to now).'
+					description:
+						'Optional ISO 8601 date of the NEWS EVENT itself (defaults to now). It is only displayed to the reader; sorting always uses the date the article was stored, so an older event date never buries the article below existing news.'
 				},
 				sources: {
 					type: 'array',
@@ -105,7 +106,10 @@ const TOOLS = [
 					description:
 						'Hot-topic ID from get_interests; pass an empty string to remove the topic assignment.'
 				},
-				published_at: { type: 'string', description: 'New ISO 8601 date.' },
+				published_at: {
+					type: 'string',
+					description: 'New ISO 8601 date of the news event (display only, never affects sorting).'
+				},
 				sources: {
 					type: 'array',
 					description: 'Replaces the stored source list completely.',

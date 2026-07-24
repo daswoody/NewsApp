@@ -44,6 +44,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			imagePath: article.imagePath,
 			saved: article.saved,
 			publishedAt: article.publishedAt,
+			createdAt: article.createdAt,
 			hasTopic: article.topicId !== null
 		},
 		bodyHtml: renderMarkdown(article.content),

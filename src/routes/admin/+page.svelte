@@ -398,6 +398,10 @@
 				<input name="showCardSummary" type="checkbox" checked={data.showCardSummary} class="h-4 w-4 accent-[var(--accent)]" />
 				Vorschautext auf den News-Karten anzeigen
 			</label>
+			<label class="flex items-center gap-2 text-sm">
+				<input name="showCardDate" type="checkbox" checked={data.showCardDate} class="h-4 w-4 accent-[var(--accent)]" />
+				Datum des Ereignisses auf den News-Karten anzeigen
+			</label>
 			<div class="flex items-center gap-3">
 				<button type="submit" class="btn-primary px-4 py-1.5 text-sm">Speichern</button>
 				{#if form && 'typographySaved' in form && form.typographySaved}
