@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import StarButton from '$lib/components/StarButton.svelte';
 	import { parallax } from '$lib/actions/parallax';
-	import { chipColor, chipColorSoft } from '$lib/chip-colors';
+	import { chipColor } from '$lib/chip-colors';
 	import { shortDate } from '$lib/dates';
 	import { renderMarkdown } from '$lib/markdown';
 	import type { ActionData, PageData } from './$types';
@@ -120,7 +120,7 @@
 				{data.categoryTitle}
 			</span>
 			{#if data.topicTitle}
-				<span class="rounded-md px-2.5 py-1 text-xs font-semibold {chipColorSoft(data.categoryTitle)}">
+				<span class="rounded-md px-2.5 py-1 text-xs font-semibold {chipColor(data.categoryTitle)}">
 					{data.topicTitle}
 				</span>
 			{/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import StarButton from '$lib/components/StarButton.svelte';
 	import { parallax } from '$lib/actions/parallax';
-	import { chipColor, chipColorSoft } from '$lib/chip-colors';
+	import { chipColor } from '$lib/chip-colors';
 	import { shortDate } from '$lib/dates';
 
 	let {
@@ -48,7 +48,8 @@
 					{article.categoryTitle}
 				</span>
 				{#if article.topicTitle}
-					<span class="rounded-md px-2.5 py-1 text-xs font-semibold {chipColorSoft(article.categoryTitle)}">
+					<!-- same look as the category chip, keyed to the category color -->
+					<span class="rounded-md px-2.5 py-1 text-xs font-semibold {chipColor(article.categoryTitle)}">
 						{article.topicTitle}
 					</span>
 				{/if}
