@@ -3,11 +3,13 @@
 	import { parallax } from '$lib/actions/parallax';
 	import { chipColor } from '$lib/chip-colors';
 	import { shortDate } from '$lib/dates';
+	import { placeholderGradient } from '$lib/placeholder-gradient';
 
 	let {
 		article,
 		showSummary = true,
-		showDate = true
+		showDate = true,
+		gradientPlaceholder = true
 	}: {
 		article: {
 			id: string;
@@ -22,6 +24,7 @@
 		};
 		showSummary?: boolean;
 		showDate?: boolean;
+		gradientPlaceholder?: boolean;
 	} = $props();
 </script>
 
@@ -38,6 +41,11 @@
 						class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
 					/>
 				</div>
+			{:else if gradientPlaceholder}
+				<div
+					class="gradient-ph h-full w-full"
+					style={placeholderGradient(article.id, article.categoryTitle)}
+				></div>
 			{:else}
 				<div class="bg-soft flex h-full w-full items-center justify-center text-4xl">📰</div>
 			{/if}

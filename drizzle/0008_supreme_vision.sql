@@ -1,0 +1,1 @@
+ALTER TABLE "app_settings" ADD COLUMN "gradient_placeholder" boolean DEFAULT true NOT NULL;

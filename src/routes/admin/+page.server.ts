@@ -77,6 +77,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		}),
 		showCardSummary: settings.showCardSummary,
 		showCardDate: settings.showCardDate,
+		gradientPlaceholder: settings.gradientPlaceholder,
 		parallaxStrength: settings.parallaxStrength / 100,
 		mcpUrl: `${url.origin}/mcp`
 	};
@@ -305,7 +306,8 @@ export const actions: Actions = {
 				? Math.round(Math.min(1, Math.max(0, parallax)) * 100)
 				: 35,
 			showCardSummary: form.get('showCardSummary') === 'on',
-			showCardDate: form.get('showCardDate') === 'on'
+			showCardDate: form.get('showCardDate') === 'on',
+			gradientPlaceholder: form.get('gradientPlaceholder') === 'on'
 		});
 		return { ok: true, typographySaved: true };
 	}

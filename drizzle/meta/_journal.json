@@ -57,6 +57,13 @@
       "when": 1784922966089,
       "tag": "0007_slim_toxin",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1784926313895,
+      "tag": "0008_supreme_vision",
+      "breakpoints": true
     }
   ]
 }

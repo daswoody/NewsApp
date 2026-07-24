@@ -119,6 +119,7 @@
 							{article}
 							showSummary={data.showCardSummary}
 							showDate={data.showCardDate}
+							gradientPlaceholder={data.gradientPlaceholder}
 						/>
 					{/each}
 				</div>

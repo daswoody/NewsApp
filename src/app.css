@@ -156,6 +156,44 @@ body {
 		background: var(--accent-soft);
 		color: color-mix(in srgb, var(--accent) 75%, var(--text));
 	}
+	/*
+	 * Pastel mesh gradient standing in for a missing article image. Hues and
+	 * blob positions come from the element's inline custom properties (see
+	 * placeholder-gradient.ts); saturation and lightness are set here so the
+	 * same gradient turns soft and light in light mode and muted and dark in
+	 * dark mode when the theme is toggled.
+	 */
+	.gradient-ph {
+		--ph-s: 72%;
+		--ph-l-base: 93%;
+		--ph-l-a: 85%;
+		--ph-l-b: 89%;
+		--ph-l-c: 86%;
+		background-color: hsl(var(--ph-h-a) var(--ph-s) var(--ph-l-base));
+		background-image:
+			radial-gradient(
+				85% 85% at var(--ph-x-a) var(--ph-y-a),
+				hsl(var(--ph-h-a) var(--ph-s) var(--ph-l-a)) 0%,
+				transparent 72%
+			),
+			radial-gradient(
+				80% 80% at var(--ph-x-b) var(--ph-y-b),
+				hsl(var(--ph-h-b) var(--ph-s) var(--ph-l-b)) 0%,
+				transparent 70%
+			),
+			radial-gradient(
+				90% 90% at var(--ph-x-c) var(--ph-y-c),
+				hsl(var(--ph-h-c) var(--ph-s) var(--ph-l-c)) 0%,
+				transparent 74%
+			);
+	}
+	.dark .gradient-ph {
+		--ph-s: 26%;
+		--ph-l-base: 14%;
+		--ph-l-a: 22%;
+		--ph-l-b: 18%;
+		--ph-l-c: 24%;
+	}
 	.subcard {
 		background: var(--bg-soft);
 		border: 1px solid var(--border);
