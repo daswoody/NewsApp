@@ -11,6 +11,9 @@
 
 	const chipBase =
 		'shrink-0 rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition';
+	// thumb-sized like the category chips on mobile, compact from sm upwards
+	const topicChipBase =
+		'shrink-0 rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition sm:px-3 sm:py-1 sm:text-xs';
 	const chipInactive =
 		'border border-token bg-[var(--card)] text-muted hover:text-[var(--text)]';
 	const chipActive = 'bg-[var(--accent)] text-[var(--on-accent)]';
@@ -70,19 +73,14 @@
 			<nav class="no-scrollbar mt-2 flex gap-2 overflow-x-auto" aria-label="Hot Topics">
 				<a
 					href={`/?cat=${data.selectedCategoryId}`}
-					class="shrink-0 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition {!data.selectedTopicId
-						? chipActive
-						: chipInactive}"
+					class="{topicChipBase} {!data.selectedTopicId ? chipActive : chipInactive}"
 				>
 					Alle Topics
 				</a>
 				{#each data.topics as topic (topic.id)}
 					<a
 						href={`/?cat=${data.selectedCategoryId}&topic=${topic.id}`}
-						class="shrink-0 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition {data.selectedTopicId ===
-						topic.id
-							? chipActive
-							: chipInactive}"
+						class="{topicChipBase} {data.selectedTopicId === topic.id ? chipActive : chipInactive}"
 					>
 						{topic.title}
 					</a>
